@@ -62,6 +62,7 @@ ENV/
 
 # Specific to this project
 tests/integration/config.json
+memory-bank/
 
 # Keep example files
 !config.yaml.example
