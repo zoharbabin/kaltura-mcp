@@ -53,14 +53,27 @@ python -m kaltura_mcp.server
 
 ## Configuration
 
-Copy `config.yaml.example` to `config.yaml` and edit it with your Kaltura API credentials:
+The Kaltura MCP Server supports a unified configuration system that works with both YAML and JSON formats. To get started:
+
+1. Copy `config.yaml.example` to `config.yaml` and edit it with your Kaltura API credentials:
 
 ```yaml
 kaltura:
   partner_id: YOUR_PARTNER_ID
   admin_secret: YOUR_ADMIN_SECRET
-  service_url: https://www.kaltura.com
+  user_id: YOUR_USER_ID
+  service_url: https://www.kaltura.com/api_v3
 ```
+
+2. You can also use environment variables for configuration:
+
+```bash
+export KALTURA_PARTNER_ID=YOUR_PARTNER_ID
+export KALTURA_ADMIN_SECRET=YOUR_ADMIN_SECRET
+export KALTURA_USER_ID=YOUR_USER_ID
+```
+
+For more detailed configuration options, see the [Configuration Guide](docs/getting-started/configuration.md).
 
 ## Usage
 

@@ -37,10 +37,22 @@ def setup_config_files():
     """Set up configuration files from examples."""
     print("Setting up configuration files...")
     
+    # Main config file
     if os.path.exists("config.yaml.example") and not os.path.exists("config.yaml"):
         print("Creating config.yaml from config.yaml.example")
         shutil.copy2("config.yaml.example", "config.yaml")
         print("Please edit config.yaml with your actual configuration.")
+    
+    # Integration test config file
+    integration_test_dir = Path("tests/integration")
+    if integration_test_dir.exists():
+        example_path = integration_test_dir / "config.json.example"
+        config_path = integration_test_dir / "config.json"
+        
+        if example_path.exists() and not config_path.exists():
+            print("Creating tests/integration/config.json from config.json.example")
+            shutil.copy2(example_path, config_path)
+            print("Please edit tests/integration/config.json with your test configuration.")
 
 def install_dependencies():
     """Install dependencies."""

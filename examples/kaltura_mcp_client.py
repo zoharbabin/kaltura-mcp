@@ -13,10 +13,12 @@ Prerequisites:
 - Python 3.10 or higher
 - MCP client library installed (`pip install mcp`)
 - Kaltura MCP server installed and running
+- Configuration file set up (config.yaml)
 """
 import asyncio
 import json
 import sys
+import os
 from mcp import StdioServerParameters
 from mcp.client.lowlevel import Client
 from mcp.client.stdio import stdio_client
@@ -25,11 +27,14 @@ async def main():
     """Run the Kaltura MCP client example."""
     print("Connecting to Kaltura MCP Server...")
     
+    # Get config path from environment or use default
+    config_path = os.environ.get("KALTURA_MCP_CONFIG", "config.yaml")
+    
     # Set up server parameters
     server_params = StdioServerParameters(
         command="kaltura-mcp",  # Command to start the server
         args=[],                # Command line arguments
-        env=None,               # Environment variables
+        env={"KALTURA_MCP_CONFIG": config_path},  # Pass config path to server
     )
     
     try:

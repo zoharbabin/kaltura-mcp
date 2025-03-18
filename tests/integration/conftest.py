@@ -4,32 +4,19 @@ Pytest configuration and fixtures for integration tests.
 import pytest
 import pytest_asyncio
 import os
-import json
 
 from kaltura_mcp.server import KalturaMcpServer
-from kaltura_mcp.config import Config, KalturaConfig, ServerConfig
+from kaltura_mcp.config import load_config
 from kaltura_mcp.kaltura.client import KalturaClientWrapper
 
 @pytest_asyncio.fixture
 async def integration_config():
     """Load integration test configuration."""
     try:
-        with open("tests/integration/config.json", "r") as f:
-            config_data = json.load(f)
-            
-        kaltura_config = KalturaConfig(
-            partner_id=config_data["partner_id"],
-            admin_secret=config_data["admin_secret"],
-            user_id=config_data["user_id"],
-            service_url=config_data["service_url"]
-        )
-        server_config = ServerConfig(
-            log_level="INFO",
-            transport="stdio",
-            port=8000
-        )
-        return Config(kaltura=kaltura_config, server=server_config)
-    except (FileNotFoundError, json.JSONDecodeError, KeyError) as e:
+        # Use the main config mechanism but with the integration test config file
+        config_path = os.environ.get("KALTURA_MCP_TEST_CONFIG", "tests/integration/config.json")
+        return load_config(config_path)
+    except Exception as e:
         pytest.skip(f"Invalid integration test config: {e}")
 
 @pytest_asyncio.fixture

@@ -1,6 +1,24 @@
 {
-  "partner_id": 12345,
-  "admin_secret": "your_admin_secret_here",
-  "user_id": "your_user_id_here",
-  "service_url": "https://www.kaltura.com/api_v3"
+  "kaltura": {
+    "partner_id": 12345,
+    "admin_secret": "your_admin_secret_here",
+    "user_id": "your_user_id_here",
+    "service_url": "https://www.kaltura.com/api_v3"
+  },
+  "server": {
+    "log_level": "INFO",
+    "transport": "stdio",
+    "port": 8000,
+    "host": "127.0.0.1",
+    "debug": false
+  },
+  "logging": {
+    "level": "INFO",
+    "file": "kaltura-mcp-test.log"
+  },
+  "context": {
+    "default_strategy": "pagination",
+    "max_entries": 100,
+    "max_context_size": 10000
+  }
 }
