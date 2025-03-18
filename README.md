@@ -14,6 +14,23 @@ This server enables AI models to:
 
 By implementing the Model Context Protocol, this server allows AI models to interact with Kaltura's API in a standardized way, making it easier to integrate Kaltura's capabilities into AI workflows.
 
+## Requirements
+
+- **Python**: 3.10 or higher (3.10, 3.11, 3.12 are officially supported)
+- **Operating Systems**: Linux, macOS, Windows
+- **Dependencies**: See `pyproject.toml` for a complete list
+
+## Repository Structure
+
+The `kaltura-mcp-public` repository contains the complete, self-contained Kaltura MCP server implementation, including:
+
+- All necessary code
+- Comprehensive documentation
+- Docker support
+- Setup script
+- Example clients
+- Test scripts
+
 ## Installation
 
 ### Using Docker
@@ -36,7 +53,7 @@ docker-compose up
 git clone https://github.com/kaltura/kaltura-mcp.git
 cd kaltura-mcp
 
-# Create a virtual environment
+# Create a virtual environment (Python 3.10 or higher required)
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 

@@ -97,7 +97,7 @@ class MediaGetToolHandler(KalturaToolHandler):
                 except Exception as data_error:
                     logger.error(f"Error getting data entry: {data_error}")
                     # If both media.get and data.get fail, raise the original exception
-                    raise Exception(f"Media entry not found: {entry_id}")
+                    raise Exception(f"Media entry not found: {entry_id}") from data_error
             
             # For other errors, return an error response
             return [

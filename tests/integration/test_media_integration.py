@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 import tempfile
 import asyncio
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 from mcp import types
 
@@ -259,9 +259,11 @@ class TestMediaIntegration:
                         "description": "Updated by integration test"
                     })
                     break  # Success, exit the retry loop
-                except Exception as e:
+                except Exception:
                     if retry < max_retries - 1:  # Don't sleep on the last iteration
-                        print(f"Retry {retry+1}/{max_retries}: Failed to update entry, waiting {retry_delay} seconds...")
+                        print(
+                            f"Retry {retry+1}/{max_retries}: Failed to update entry, waiting {retry_delay} seconds..."
+                        )
                         await asyncio.sleep(retry_delay)
                         retry_delay *= 2  # Exponential backoff
                     else:

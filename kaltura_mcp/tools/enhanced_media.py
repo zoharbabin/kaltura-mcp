@@ -511,7 +511,9 @@ class EnhancedMediaUploadToolHandler(KalturaToolHandler):
             )
             
             if not hasattr(final_entry, 'id') or not final_entry.id:
-                logger.error("Final document entry has no valid ID")
+                logger.error(
+                    "Final document entry has no valid ID"
+                )
                 # If final_entry has no ID, return the original document_entry which should have an ID
                 return document_entry
                 

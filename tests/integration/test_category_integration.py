@@ -144,7 +144,7 @@ class TestCategoryIntegration:
             # Use a direct call to the handler to ensure the exception is propagated
             from kaltura_mcp.tools.category import CategoryGetToolHandler
             handler = CategoryGetToolHandler(server.kaltura_client)
-            with pytest.raises(Exception):
+            with pytest.raises(ValueError):  # Using a more specific exception type
                 await handler.handle({"id": category_id})
         
         finally:
