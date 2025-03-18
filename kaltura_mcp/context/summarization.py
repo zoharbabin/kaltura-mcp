@@ -2,11 +2,13 @@
 Summarization strategy for context management.
 """
 
+from typing import Any, Dict
+
 
 class SummarizationStrategy:
     """Strategy for summarizing data."""
 
-    def apply(self, data, **kwargs):
+    def apply(self, data: Any, **kwargs: Any) -> Any:
         """Apply summarization to the data.
 
         Args:

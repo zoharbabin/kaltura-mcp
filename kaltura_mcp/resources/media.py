@@ -5,7 +5,7 @@ Media-related resource handlers for Kaltura MCP Server.
 import json
 import logging
 import re
-from typing import List, Pattern
+from typing import Any, Dict, List, Pattern, Union
 
 import mcp.types as types
 from KalturaClient.Plugins.Core import KalturaFilterPager, KalturaMediaEntryFilter
@@ -58,9 +58,9 @@ class MediaEntryResourceHandler(KalturaResourceHandler):
 
             return [
                 types.ResourceContents(
-                    uri=uri,
                     mimeType="application/json",
                     text=json.dumps(response, indent=2, cls=KalturaJSONEncoder),
+                    uri=uri,  # type: ignore
                 )
             ]
 
@@ -68,23 +68,23 @@ class MediaEntryResourceHandler(KalturaResourceHandler):
             logger.error(f"Error getting media entry: {e}")
             return [
                 types.ResourceContents(
-                    uri=uri,
                     mimeType="application/json",
                     text=json.dumps(
                         {"error": f"Error getting media entry: {str(e)}"},
                         indent=2,
                         cls=KalturaJSONEncoder,
                     ),
+                    uri=uri,  # type: ignore
                 )
             ]
 
     def get_resource_definition(self) -> types.Resource:
         """Return the resource definition."""
         return types.Resource(
-            uri="kaltura://media/{entryId}",
             name="Kaltura Media Entry",
             description="Get details of a specific media entry",
             mimeType="application/json",
+            uri="kaltura://media/{entryId}",  # type: ignore
         )
 
 
@@ -159,9 +159,9 @@ class MediaListResourceHandler(KalturaResourceHandler):
 
             return [
                 types.ResourceContents(
-                    uri=uri,
                     mimeType="application/json",
                     text=json.dumps(response, indent=2, cls=KalturaJSONEncoder),
+                    uri=uri,  # type: ignore
                 )
             ]
 
@@ -169,17 +169,17 @@ class MediaListResourceHandler(KalturaResourceHandler):
             logger.error(f"Error listing media entries: {e}")
             return [
                 types.ResourceContents(
-                    uri=uri,
                     mimeType="application/json",
                     text=json.dumps({"error": f"Error listing media entries: {str(e)}"}, indent=2),
+                    uri=uri,  # type: ignore
                 )
             ]
 
     def get_resource_definition(self) -> types.Resource:
         """Return the resource definition."""
         return types.Resource(
-            uri="kaltura://media/list",
             name="Kaltura Media List",
             description="List media entries with optional filtering",
             mimeType="application/json",
+            uri="kaltura://media/list",  # type: ignore
         )

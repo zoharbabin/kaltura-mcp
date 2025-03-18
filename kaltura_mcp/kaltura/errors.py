@@ -3,6 +3,7 @@ Error handling for Kaltura API integration.
 """
 
 from enum import Enum, auto
+from typing import Any
 
 from KalturaClient.exceptions import KalturaClientException, KalturaException
 
@@ -23,13 +24,13 @@ class ErrorCode(Enum):
 class McpError(Exception):
     """MCP error class."""
 
-    def __init__(self, code, message):
+    def __init__(self, code: ErrorCode, message: str) -> None:
         self.code = code
         self.message = message
         super().__init__(message)
 
 
-def translate_kaltura_error(error):
+def translate_kaltura_error(error: Any) -> McpError:
     """Translate Kaltura errors to MCP errors."""
     if isinstance(error, KalturaClientException):
         return McpError(ErrorCode.InternalError, f"Kaltura client error: {error.message}")

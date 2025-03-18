@@ -54,10 +54,12 @@ def guess_mime_type(file_path: str) -> str:
             mime_type = magic.from_file(file_path, mime=True)
         except Exception as e:
             logger.warning(f"python-magic failed to detect MIME type: {e}. Falling back to mimetypes.")
-            mime_type, _ = mimetypes.guess_type(file_path, strict=False)
+            mime_type_result, _ = mimetypes.guess_type(file_path, strict=False)
+            mime_type = mime_type_result if mime_type_result is not None else "application/octet-stream"
     else:
         # Fallback to extension-based detection
-        mime_type, _ = mimetypes.guess_type(file_path, strict=False)
+        mime_type_result, _ = mimetypes.guess_type(file_path, strict=False)
+        mime_type = mime_type_result if mime_type_result is not None else "application/octet-stream"
 
     # Handle the case where MIME detection fails entirely
     if not mime_type:
@@ -146,7 +148,7 @@ def get_media_type(file_path: str) -> KalturaMediaType:
     return KalturaMediaType.VIDEO
 
 
-def get_document_type(mime_type: str) -> int:
+def get_document_type(mime_type: str) -> KalturaDocumentType:
     """
     Map MIME type to KalturaDocumentType enumeration value.
 

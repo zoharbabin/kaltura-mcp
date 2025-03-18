@@ -4,7 +4,7 @@ Base classes for Kaltura tool handlers.
 
 import json
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Union, Optional
 
 import mcp.types as types
 
@@ -12,7 +12,7 @@ import mcp.types as types
 class KalturaJSONEncoder(json.JSONEncoder):
     """Custom JSON encoder for Kaltura objects."""
 
-    def default(self, obj):
+    def default(self, obj: Any) -> Any:
         """Handle special Kaltura types."""
         # Handle objects with a value attribute
         if hasattr(obj, "value"):
@@ -33,7 +33,7 @@ class KalturaJSONEncoder(json.JSONEncoder):
 class KalturaToolHandler(ABC):
     """Base class for Kaltura tool handlers."""
 
-    def __init__(self, kaltura_client):
+    def __init__(self, kaltura_client: Any) -> None:
         """Initialize with a Kaltura client."""
         self.kaltura_client = kaltura_client
 

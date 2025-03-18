@@ -10,7 +10,7 @@ import asyncio
 import json
 import logging
 import os
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Union, Optional
 
 import mcp.types as types
 from KalturaClient.Plugins.Core import (
@@ -390,7 +390,7 @@ class EnhancedMediaUploadToolHandler(KalturaToolHandler):
         tags: str,
         access_control_id: int = 0,
         conversion_profile_id: int = 0,
-    ):
+    ) -> Any:
         """
         Create a KalturaMediaEntry using the uploaded file.
 
@@ -459,7 +459,7 @@ class EnhancedMediaUploadToolHandler(KalturaToolHandler):
         mime_type: str,
         access_control_id: int = 0,
         conversion_profile_id: int = 0,
-    ):
+    ) -> Any:
         """
         Create a KalturaDocumentEntry using the uploaded file.
 
@@ -527,7 +527,7 @@ class EnhancedMediaUploadToolHandler(KalturaToolHandler):
         description: str,
         tags: str,
         access_control_id: int = 0,
-    ):
+    ) -> Any:
         """
         Create a KalturaDataEntry using the uploaded file.
 
@@ -597,7 +597,7 @@ class EnhancedMediaUploadToolHandler(KalturaToolHandler):
         except Exception as e:
             logger.warning(f"Failed to assign entry {entry_id} to category {category_id}: {e}")
 
-    async def _get_entry_details(self, entry_id: str, entry_type: str):
+    async def _get_entry_details(self, entry_id: str, entry_type: str) -> Any:
         """
         Get the details of an entry.
 

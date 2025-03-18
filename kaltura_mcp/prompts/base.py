@@ -3,7 +3,7 @@ Base prompt class for the Kaltura-MCP Server intelligent prompting library.
 """
 
 import json
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import yaml
 
@@ -17,9 +17,9 @@ class BasePrompt:
         self.description = description
         self.system_message = ""
         self.user_message_template = ""
-        self.examples = []
-        self.required_tools = []
-        self.required_resources = []
+        self.examples: List[Dict[str, str]] = []
+        self.required_tools: List[str] = []
+        self.required_resources: List[str] = []
 
     def set_system_message(self, system_message: str) -> "BasePrompt":
         """Set the system message for the prompt."""
@@ -46,7 +46,7 @@ class BasePrompt:
         self.required_resources.append(resource_uri)
         return self
 
-    def format_user_message(self, **kwargs) -> str:
+    def format_user_message(self, **kwargs: Any) -> str:
         """Format the user message template with the given parameters."""
         return self.user_message_template.format(**kwargs)
 

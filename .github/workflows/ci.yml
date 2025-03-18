@@ -29,7 +29,9 @@ jobs:
         ruff check .
     - name: Type check with mypy
       run: |
-        mypy kaltura_mcp
+        # Copy mypy.ini to ensure consistent configuration
+        cp mypy.ini /tmp/mypy.ini
+        mypy --config-file=/tmp/mypy.ini kaltura_mcp
     - name: Test with pytest
       run: |
         pytest --cov=kaltura_mcp tests/

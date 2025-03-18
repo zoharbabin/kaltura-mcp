@@ -55,9 +55,9 @@ class UserResourceHandler(KalturaResourceHandler):
 
             return [
                 types.ResourceContents(
-                    uri=uri,
                     mimeType="application/json",
                     text=json.dumps(response, indent=2, cls=KalturaJSONEncoder),
+                    uri=uri,  # type: ignore
                 )
             ]
 
@@ -65,19 +65,19 @@ class UserResourceHandler(KalturaResourceHandler):
             logger.error(f"Error getting user: {e}")
             return [
                 types.ResourceContents(
-                    uri=uri,
                     mimeType="application/json",
                     text=json.dumps({"error": f"Error getting user: {str(e)}"}, indent=2, cls=KalturaJSONEncoder),
+                    uri=uri,  # type: ignore
                 )
             ]
 
     def get_resource_definition(self) -> types.Resource:
         """Return the resource definition."""
         return types.Resource(
-            uri="kaltura://user/{userId}",
             name="Kaltura User",
             description="Get details of a specific user",
             mimeType="application/json",
+            uri="kaltura://user/{userId}",  # type: ignore
         )
 
 
@@ -152,9 +152,9 @@ class UserListResourceHandler(KalturaResourceHandler):
 
             return [
                 types.ResourceContents(
-                    uri=uri,
                     mimeType="application/json",
                     text=json.dumps(response, indent=2, cls=KalturaJSONEncoder),
+                    uri=uri,  # type: ignore
                 )
             ]
 
@@ -165,8 +165,8 @@ class UserListResourceHandler(KalturaResourceHandler):
     def get_resource_definition(self) -> types.Resource:
         """Return the resource definition."""
         return types.Resource(
-            uri="kaltura://user/list",
             name="Kaltura User List",
             description="List users with optional filtering",
             mimeType="application/json",
+            uri="kaltura://user/list",  # type: ignore
         )

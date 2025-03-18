@@ -11,6 +11,7 @@ import asyncio
 import logging
 import os
 import time
+from typing import Any, Optional
 
 import aiohttp
 import anyio
@@ -55,7 +56,7 @@ class ChunkedUploader:
 
     def __init__(
         self,
-        kaltura_client,
+        kaltura_client: Any,
         chunk_size_kb: int = 2048,
         adaptive_chunking: bool = False,
         target_upload_time: float = 5.0,
@@ -196,7 +197,7 @@ class ChunkedUploader:
             # 3) Finalize the upload
             await self._finalize_upload_token(upload_token.id, file_size)
             logger.info(f"Successfully uploaded file '{file_path}' with token ID {upload_token.id}")
-            return upload_token.id
+            return upload_token.id  # type: ignore
 
         except aiohttp.ClientError as e:
             logger.error(f"Network error during upload of '{file_path}': {e}")
@@ -338,7 +339,7 @@ class ChunkedUploader:
         # If we exhaust all attempts, raise an error
         raise TokenNotFinalizedError(f"Upload token {upload_token_id} not finalized after {max_attempts} attempts.")
 
-    async def _validate_upload_token_status(self, upload_token, file_size: int) -> bool:
+    async def _validate_upload_token_status(self, upload_token: Any, file_size: int) -> bool:
         """
         Check if the upload token status is FULL_UPLOAD (completed).
 

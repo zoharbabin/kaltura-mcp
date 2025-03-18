@@ -60,7 +60,7 @@ class Config:
     # Store the raw config data for access to custom fields
     _raw_data: Dict[str, Any] = field(default_factory=dict, repr=False)
 
-    def get_custom_value(self, path: str, default=None):
+    def get_custom_value(self, path: str, default: Any = None) -> Any:
         """Get a custom configuration value by dot-notation path."""
         parts = path.split(".")
         current = self._raw_data
@@ -89,7 +89,7 @@ def load_config(config_path: Optional[str] = None) -> Config:
     if config_path is None:
         config_path = os.environ.get("KALTURA_MCP_CONFIG", "config.yaml")
 
-    config_data = {}
+    config_data: Dict[str, Any] = {}
 
     # Load from config file if it exists
     if os.path.exists(config_path):

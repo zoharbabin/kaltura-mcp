@@ -2,11 +2,13 @@
 Pagination strategy for context management.
 """
 
+from typing import Any, Dict, List, Optional, Union
+
 
 class PaginationStrategy:
     """Strategy for paginating data."""
 
-    def apply(self, data, **kwargs):
+    def apply(self, data: Any, **kwargs: Any) -> Dict[str, Any]:
         """Apply pagination to the data.
 
         Args:
@@ -36,7 +38,7 @@ class PaginationStrategy:
             items = data
         else:
             # Return data as is if we can't paginate
-            return data
+            return data  # type: ignore
 
         # Calculate pagination
         start_index = (page - 1) * page_size

@@ -3,6 +3,7 @@
 Kaltura MCP Server main module.
 """
 import logging
+from typing import Any, Dict, List, Union, Optional, Callable, Coroutine
 
 import anyio
 import mcp.types as types
@@ -17,15 +18,15 @@ logger = logging.getLogger(__name__)
 class KalturaMcpServer:
     """Main server class for Kaltura-MCP."""
 
-    def __init__(self, config):
+    def __init__(self, config: Any) -> None:
         """Initialize the server with configuration."""
         self.config = config
-        self.app = Server("kaltura-mcp-server")
-        self.kaltura_client = None
-        self.tool_handlers = {}
-        self.resource_handlers = {}
+        self.app: Server = Server("kaltura-mcp-server")
+        self.kaltura_client: Any = None
+        self.tool_handlers: Dict[str, Any] = {}
+        self.resource_handlers: Dict[str, Any] = {}
 
-    async def initialize(self):
+    async def initialize(self) -> None:
         """Initialize the server components."""
         # Initialize Kaltura client
         from kaltura_mcp.kaltura.client import KalturaClientWrapper
@@ -41,7 +42,7 @@ class KalturaMcpServer:
 
         logger.info("Kaltura MCP Server initialized")
 
-    def _register_tool_handlers(self):
+    def _register_tool_handlers(self) -> None:
         """Register all tool handlers."""
         # Import tool handlers
         from kaltura_mcp.tools.category import (
@@ -89,7 +90,7 @@ class KalturaMcpServer:
 
         logger.info(f"Registered {len(self.tool_handlers)} tool handlers")
 
-    def _register_resource_handlers(self):
+    def _register_resource_handlers(self) -> None:
         """Register all resource handlers."""
         # Import resource handlers
         from kaltura_mcp.resources.category import (
@@ -113,48 +114,48 @@ class KalturaMcpServer:
 
         logger.info(f"Registered {len(self.resource_handlers)} resource handlers")
 
-    async def run(self):
+    async def run(self) -> None:
         """Run the server."""
         # Register MCP handlers
 
         # Register handlers directly
 
         # List tools handler
-        async def list_tools_handler() -> list[types.Tool]:
+        async def list_tools_handler() -> List[types.Tool]:
             """List all available tools."""
             return [handler.get_tool_definition() for handler in self.tool_handlers.values()]
 
         # Call tool handler
         async def call_tool_handler(
-            name: str, arguments: dict
-        ) -> list[types.TextContent | types.ImageContent | types.EmbeddedResource]:
+            name: str, arguments: Dict[str, Any]
+        ) -> List[Union[types.TextContent, types.ImageContent, types.EmbeddedResource]]:
             """Call a tool with the given name and arguments."""
             if name not in self.tool_handlers:
                 raise ValueError(f"Unknown tool: {name}")
 
             handler = self.tool_handlers[name]
-            return await handler.handle(arguments)
+            return await handler.handle(arguments)  # type: ignore
 
         # List resources handler
-        async def list_resources_handler() -> list[types.Resource]:
+        async def list_resources_handler() -> List[types.Resource]:
             """List all available resources."""
             return [handler.get_resource_definition() for handler in self.resource_handlers.values()]
 
         # Read resource handler
-        async def read_resource_handler(uri: str) -> str | bytes:
+        async def read_resource_handler(uri: str) -> Union[str, bytes]:
             """Read a resource with the given URI."""
             # Find the appropriate handler based on URI pattern
             for handler in self.resource_handlers.values():
                 if handler.matches_uri(uri):
-                    return await handler.handle(uri)
+                    return await handler.handle(uri)  # type: ignore
 
             raise ValueError(f"Unknown resource: {uri}")
 
         # Register handlers with the app
-        self.app.list_tools = list_tools_handler
-        self.app.call_tool = call_tool_handler
-        self.app.list_resources = list_resources_handler
-        self.app.read_resource = read_resource_handler
+        self.app.list_tools = list_tools_handler  # type: ignore
+        self.app.call_tool = call_tool_handler  # type: ignore
+        self.app.list_resources = list_resources_handler  # type: ignore
+        self.app.read_resource = read_resource_handler  # type: ignore
 
         logger.info("Starting Kaltura MCP Server")
 
@@ -163,7 +164,7 @@ class KalturaMcpServer:
             await self.app.run(streams[0], streams[1], self.app.create_initialization_options())
 
 
-def main():
+def main() -> None:
     """Main entry point for the server."""
     # Configure logging
     logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -174,7 +175,7 @@ def main():
     # Create and run server
     server = KalturaMcpServer(config)
 
-    async def run_server():
+    async def run_server() -> None:
         await server.initialize()
         await server.run()
 

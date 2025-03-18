@@ -2,11 +2,13 @@
 Selective context strategy for context management.
 """
 
+from typing import Any, Dict, List, Optional
+
 
 class SelectiveContextStrategy:
     """Strategy for selecting specific fields from data."""
 
-    def apply(self, data, **kwargs):
+    def apply(self, data: Any, **kwargs: Any) -> Any:
         """Apply selective context to the data.
 
         Args:

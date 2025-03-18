@@ -16,14 +16,14 @@ logger = logging.getLogger(__name__)
 class KalturaClientWrapper:
     """Wrapper for the Kaltura client SDK."""
 
-    def __init__(self, config):
+    def __init__(self, config: Any) -> None:
         """Initialize with configuration."""
         self.config = config
-        self.client = None
-        self.ks = None
+        self.client: Optional[KalturaClient] = None
+        self.ks: Optional[str] = None
         self.ks_expiry = 0
 
-    async def initialize(self):
+    async def initialize(self) -> None:
         """Initialize the Kaltura client."""
         # Create client configuration
         client_config = KalturaConfiguration()
@@ -44,30 +44,31 @@ class KalturaClientWrapper:
 
         # Generate new KS
         logger.info("Generating new Kaltura session")
-        ks = self.client.generateSession(
-            self.config.kaltura.admin_secret,
-            self.config.kaltura.user_id,
-            KalturaSessionType.ADMIN,
-            self.config.kaltura.partner_id,
-            86400,  # 24 hours
-            "disableentitlement",
-        )
+        if self.client is not None:
+            ks = self.client.generateSession(
+                self.config.kaltura.admin_secret,
+                self.config.kaltura.user_id,
+                KalturaSessionType.ADMIN,
+                self.config.kaltura.partner_id,
+                86400,  # 24 hours
+                "disableentitlement",
+            )
 
-        # Convert bytes to string if necessary
-        if isinstance(ks, bytes):
-            self.ks = ks.decode("utf-8")
-        else:
-            self.ks = ks
+            # Convert bytes to string if necessary
+            if isinstance(ks, bytes):
+                self.ks = ks.decode("utf-8")
+            else:
+                self.ks = ks
 
-        # Set KS in client
-        self.client.setKs(self.ks)
+            # Set KS in client
+            self.client.setKs(self.ks)
 
         # Set expiry time (slightly less than actual expiry to be safe)
-        self.ks_expiry = time.time() + 86000  # ~23.9 hours
+        self.ks_expiry = int(time.time() + 86000)  # ~23.9 hours
 
-        return self.ks
+        return self.ks or ""
 
-    async def execute_request(self, service: str, action: str, params: Optional[Dict[str, Any]] = None, **kwargs) -> Any:
+    async def execute_request(self, service: str, action: str, params: Optional[Dict[str, Any]] = None, **kwargs: Any) -> Any:
         """Execute a Kaltura API request."""
         # Ensure valid KS
         await self.ensure_valid_ks()
@@ -105,13 +106,13 @@ class KalturaClientWrapper:
 
     def get_service_url(self) -> str:
         """Get the Kaltura service URL."""
-        return self.config.kaltura.service_url
+        return str(self.config.kaltura.service_url)
 
     def get_ks(self) -> str:
         """Get the current Kaltura Session ID."""
-        return self.ks
+        return self.ks or ""
 
-    async def list_media(self, page_size=30, page=1):
+    async def list_media(self, page_size: int = 30, page: int = 1) -> Any:
         """List media entries."""
         await self.ensure_valid_ks()
 

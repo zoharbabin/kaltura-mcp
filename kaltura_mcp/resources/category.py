@@ -5,7 +5,7 @@ Category-related resource handlers for Kaltura MCP Server.
 import json
 import logging
 import re
-from typing import List, Pattern
+from typing import Any, Dict, List, Pattern, Union
 
 import mcp.types as types
 from KalturaClient.Plugins.Core import KalturaCategoryFilter, KalturaFilterPager
@@ -59,9 +59,9 @@ class CategoryResourceHandler(KalturaResourceHandler):
 
             return [
                 types.ResourceContents(
-                    uri=uri,
                     mimeType="application/json",
                     text=json.dumps(response, indent=2, cls=KalturaJSONEncoder),
+                    uri=uri,  # type: ignore
                 )
             ]
 
@@ -69,23 +69,23 @@ class CategoryResourceHandler(KalturaResourceHandler):
             logger.error(f"Error getting category: {e}")
             return [
                 types.ResourceContents(
-                    uri=uri,
                     mimeType="application/json",
                     text=json.dumps(
                         {"error": f"Error getting category: {str(e)}"},
                         indent=2,
                         cls=KalturaJSONEncoder,
                     ),
+                    uri=uri,  # type: ignore
                 )
             ]
 
     def get_resource_definition(self) -> types.Resource:
         """Return the resource definition."""
         return types.Resource(
-            uri="kaltura://category/{categoryId}",
             name="Kaltura Category",
             description="Get details of a specific category",
             mimeType="application/json",
+            uri="kaltura://category/{categoryId}",  # type: ignore
         )
 
 
@@ -162,9 +162,9 @@ class CategoryListResourceHandler(KalturaResourceHandler):
 
             return [
                 types.ResourceContents(
-                    uri=uri,
                     mimeType="application/json",
                     text=json.dumps(response, indent=2, cls=KalturaJSONEncoder),
+                    uri=uri,  # type: ignore
                 )
             ]
 
@@ -175,8 +175,8 @@ class CategoryListResourceHandler(KalturaResourceHandler):
     def get_resource_definition(self) -> types.Resource:
         """Return the resource definition."""
         return types.Resource(
-            uri="kaltura://category/list",
             name="Kaltura Category List",
             description="List categories with optional filtering",
             mimeType="application/json",
+            uri="kaltura://category/list",  # type: ignore
         )
