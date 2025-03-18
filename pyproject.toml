@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kaltura-mcp"
+version = "0.1.0"
+description = "Kaltura MCP Server for LLM integration"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "Kaltura MCP Team", email = "example@example.com"}
+]
+dependencies = [
+    "mcp>=1.4.1",
+    "KalturaApiClient>=18.0.0",
+    "pyyaml>=6.0",
+    "anyio>=3.6.2",
+    "aiohttp>=3.8.5",
+    "python-magic>=0.4.27",
+    "requests-toolbelt>=1.0.0",
+    "lxml>=5.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.20.0",
+    "anyio[trio]>=4.0.0",
+    "black>=23.0.0",
+    "mypy>=1.0.0",
+    "ruff>=0.0.1",
+]
+
+[project.scripts]
+kaltura-mcp = "kaltura_mcp.server:main"
+
+[tool.setuptools]
+packages = ["kaltura_mcp"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+select = ["E", "F", "B", "I"]

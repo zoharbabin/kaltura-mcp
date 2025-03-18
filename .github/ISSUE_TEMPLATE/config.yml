@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Kaltura MCP Documentation
+    url: https://github.com/kaltura/kaltura-mcp/tree/main/docs
+    about: Check our documentation for answers to common questions
+  - name: Kaltura Developer Portal
+    url: https://developer.kaltura.com/
+    about: Learn more about Kaltura's APIs and developer resources

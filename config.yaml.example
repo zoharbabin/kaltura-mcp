@@ -1,0 +1,26 @@
+# Kaltura MCP Server Configuration Example
+# Copy this file to config.yaml and update with your actual credentials
+
+# Kaltura API credentials
+kaltura:
+  partner_id: 123456  # Your Kaltura partner ID
+  admin_secret: "your-admin-secret"  # Your Kaltura admin secret
+  user_id: "your-user-id"  # Your Kaltura user ID
+  service_url: "https://www.kaltura.com/api_v3"  # Kaltura API endpoint
+
+# Server configuration
+server:
+  host: "127.0.0.1"  # Server host
+  port: 8000  # Server port
+  debug: false  # Enable debug mode
+
+# Logging configuration
+logging:
+  level: "INFO"  # Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+  file: "kaltura-mcp.log"  # Log file path (optional)
+
+# Context management configuration
+context:
+  default_strategy: "pagination"  # Default context management strategy (pagination, summarization, selective)
+  max_entries: 100  # Maximum number of entries to return in a single response
+  max_context_size: 10000  # Maximum context size in tokens

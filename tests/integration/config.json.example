@@ -1,0 +1,6 @@
+{
+  "partner_id": 12345,
+  "admin_secret": "your_admin_secret_here",
+  "user_id": "your_user_id_here",
+  "service_url": "https://www.kaltura.com/api_v3"
+}

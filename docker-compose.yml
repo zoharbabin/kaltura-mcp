@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  kaltura-mcp:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./config.yaml:/app/config.yaml
+    environment:
+      - PYTHONUNBUFFERED=1

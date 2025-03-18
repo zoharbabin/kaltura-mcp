@@ -1,0 +1,67 @@
+# Python bytecode and cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Build and distribution
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+*.egg-info/
+*.egg
+
+# Testing and coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs and temporary files
+*.log
+*.tmp
+*.bak
+*~
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Sensitive configuration files
+.env
+config.yaml
+config.json
+*.pem
+*.key
+id_rsa
+id_dsa
+*.p12
+*.pfx
+credentials.json
+secrets.json
+token.json
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# Specific to this project
+tests/integration/config.json
+
+# Keep example files
+!config.yaml.example
+!config.json.example
