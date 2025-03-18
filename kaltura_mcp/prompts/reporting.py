@@ -4,22 +4,23 @@ Reporting prompts for the Kaltura-MCP Server intelligent prompting library.
 This module provides prompts for reporting and analytics tasks such as content performance analysis,
 user engagement reporting, trend identification, and recommendation generation.
 """
-from typing import Dict, Any, List, Optional
+
 from .base import BasePrompt
 
 
 class ReportingPrompts:
     """Collection of reporting prompts."""
-    
+
     @staticmethod
     def trend_identification() -> BasePrompt:
         """Create a prompt for trend identification."""
         prompt = BasePrompt(
             name="trend_identification",
-            description="Identify and analyze significant trends in platform usage and content performance"
+            description="Identify and analyze significant trends in platform usage and content performance",
         )
-        
-        prompt.set_system_message("""
+
+        prompt.set_system_message(
+            """
 You are a trend analysis specialist for a video platform. Your task is to identify
 and analyze significant trends in platform usage, content performance, and user behavior.
 
@@ -32,9 +33,11 @@ When identifying and analyzing trends:
 6. Provide actionable insights based on the identified trends
 
 Your analysis should be data-driven, insightful, and focused on actionable recommendations.
-""")
-        
-        prompt.set_user_message_template("""
+"""
+        )
+
+        prompt.set_user_message_template(
+            """
 Please identify and analyze trends in the following data:
 
 Time Period: {time_period}
@@ -55,8 +58,9 @@ External Factors:
 Additional context: {additional_context}
 
 Please provide a comprehensive trend analysis with insights and recommendations.
-""")
-        
+"""
+        )
+
         prompt.add_example(
             user_message="""
 Please identify and analyze trends in the following data:
@@ -331,25 +335,26 @@ Analysis of the past 12 months reveals five transformative trends reshaping ente
 ## Conclusion
 
 The enterprise learning platform is undergoing a fundamental transformation from traditional e-learning to a mobile-friendly, interactive, social learning ecosystem. The data shows clear user preference for shorter, more engaging content consumed in flexible time periods across multiple devices. By accelerating the platform's evolution toward microlearning, mobile optimization, and social engagement, the company can capitalize on these trends to drive further growth and deeper learning impact.
-"""
+""",
         )
-        
+
         prompt.add_required_tool("kaltura.media.list")
         prompt.add_required_tool("kaltura.user.list")
         prompt.add_required_resource("kaltura://media/list")
         prompt.add_required_resource("kaltura://users/list")
-        
+
         return prompt
-    
+
     @staticmethod
     def recommendation_generation() -> BasePrompt:
         """Create a prompt for generating recommendations based on analytics."""
         prompt = BasePrompt(
             name="recommendation_generation",
-            description="Generate data-driven recommendations for content strategy and platform optimization"
+            description="Generate data-driven recommendations for content strategy and platform optimization",
         )
-        
-        prompt.set_system_message("""
+
+        prompt.set_system_message(
+            """
 You are a strategic recommendations specialist for a video platform. Your task is to analyze
 platform data and generate actionable recommendations to improve content strategy, user engagement,
 and overall platform performance.
@@ -363,9 +368,11 @@ When generating recommendations:
 6. Suggest metrics to measure the success of each recommendation
 
 Your recommendations should be practical, data-driven, and aligned with business objectives.
-""")
-        
-        prompt.set_user_message_template("""
+"""
+        )
+
+        prompt.set_user_message_template(
+            """
 Please generate strategic recommendations based on the following data:
 
 Business Context:
@@ -388,11 +395,12 @@ Resource Constraints:
 Additional context: {additional_context}
 
 Please provide comprehensive, prioritized recommendations with implementation guidance.
-""")
-        
+"""
+        )
+
         prompt.add_required_tool("kaltura.media.list")
         prompt.add_required_tool("kaltura.user.list")
         prompt.add_required_resource("kaltura://media/list")
         prompt.add_required_resource("kaltura://users/list")
-        
+
         return prompt

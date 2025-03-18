@@ -1,21 +1,19 @@
 """
 Tests for user tools.
 """
-import json
-import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
 
-from KalturaClient.Plugins.Core import (
-    KalturaUser,
-    KalturaUserListResponse
-)
+import json
+from unittest.mock import AsyncMock, MagicMock
+
+import pytest
+from KalturaClient.Plugins.Core import KalturaUser, KalturaUserListResponse
 
 from kaltura_mcp.tools.user import (
-    UserListToolHandler,
-    UserGetToolHandler,
     UserAddToolHandler,
+    UserDeleteToolHandler,
+    UserGetToolHandler,
+    UserListToolHandler,
     UserUpdateToolHandler,
-    UserDeleteToolHandler
 )
 
 
@@ -52,14 +50,12 @@ async def test_user_get_tool(mock_kaltura_client, mock_user):
     # Setup
     mock_kaltura_client.execute_request.return_value = mock_user
     handler = UserGetToolHandler(mock_kaltura_client)
-    
+
     # Execute
     result = await handler.handle({"id": "test_user_id"})
-    
+
     # Verify
-    mock_kaltura_client.execute_request.assert_called_once_with(
-        "user", "get", userId="test_user_id"
-    )
+    mock_kaltura_client.execute_request.assert_called_once_with("user", "get", userId="test_user_id")
     assert len(result) == 1
     assert result[0].type == "text"
     response = json.loads(result[0].text)
@@ -73,17 +69,19 @@ async def test_user_add_tool(mock_kaltura_client, mock_user):
     # Setup
     mock_kaltura_client.execute_request.return_value = mock_user
     handler = UserAddToolHandler(mock_kaltura_client)
-    
+
     # Execute
-    result = await handler.handle({
-        "id": "test_user_id",
-        "email": "test@example.com",
-        "full_name": "Test User Full Name",
-        "screenName": "Test User",
-        "role_ids": "1,2,3",
-        "is_admin": False
-    })
-    
+    result = await handler.handle(
+        {
+            "id": "test_user_id",
+            "email": "test@example.com",
+            "full_name": "Test User Full Name",
+            "screenName": "Test User",
+            "role_ids": "1,2,3",
+            "is_admin": False,
+        }
+    )
+
     # Verify
     mock_kaltura_client.execute_request.assert_called_once()
     assert mock_kaltura_client.execute_request.call_args[0][0] == "user"
@@ -102,14 +100,10 @@ async def test_user_update_tool(mock_kaltura_client, mock_user):
     # Setup
     mock_kaltura_client.execute_request.side_effect = [mock_user, mock_user]
     handler = UserUpdateToolHandler(mock_kaltura_client)
-    
+
     # Execute
-    result = await handler.handle({
-        "id": "test_user_id",
-        "email": "updated@example.com",
-        "full_name": "Updated User Name"
-    })
-    
+    result = await handler.handle({"id": "test_user_id", "email": "updated@example.com", "full_name": "Updated User Name"})
+
     # Verify
     assert mock_kaltura_client.execute_request.call_count == 2
     assert mock_kaltura_client.execute_request.call_args_list[0][0][0] == "user"
@@ -129,12 +123,10 @@ async def test_user_delete_tool(mock_kaltura_client, mock_user):
     # Setup
     mock_kaltura_client.execute_request.side_effect = [mock_user, True]
     handler = UserDeleteToolHandler(mock_kaltura_client)
-    
+
     # Execute
-    result = await handler.handle({
-        "id": "test_user_id"
-    })
-    
+    result = await handler.handle({"id": "test_user_id"})
+
     # Verify
     assert mock_kaltura_client.execute_request.call_count == 2
     assert mock_kaltura_client.execute_request.call_args_list[0][0][0] == "user"
@@ -154,7 +146,7 @@ async def test_user_list_tool(mock_kaltura_client):
     # Setup
     mock_response = MagicMock(spec=KalturaUserListResponse)
     mock_response.totalCount = 2
-    
+
     # Create user objects with proper attributes
     user1 = MagicMock()
     user1.id = "user1"
@@ -171,7 +163,7 @@ async def test_user_list_tool(mock_kaltura_client):
     user1.isAdmin = False
     user1.type = MagicMock()
     user1.type.value = 0
-    
+
     user2 = MagicMock()
     user2.id = "user2"
     user2.partnerId = 123
@@ -187,20 +179,14 @@ async def test_user_list_tool(mock_kaltura_client):
     user2.isAdmin = True
     user2.type = MagicMock()
     user2.type.value = 0
-    
+
     mock_response.objects = [user1, user2]
     mock_kaltura_client.execute_request.return_value = mock_response
     handler = UserListToolHandler(mock_kaltura_client)
-    
+
     # Execute
-    result = await handler.handle({
-        "page_size": 10,
-        "page_index": 1,
-        "filter": {
-            "idOrScreenNameStartsWith": "user"
-        }
-    })
-    
+    result = await handler.handle({"page_size": 10, "page_index": 1, "filter": {"idOrScreenNameStartsWith": "user"}})
+
     # Verify
     mock_kaltura_client.execute_request.assert_called_once()
     assert mock_kaltura_client.execute_request.call_args[0][0] == "user"

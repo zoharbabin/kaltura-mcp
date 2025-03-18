@@ -4,22 +4,20 @@ Content workflow prompts for the Kaltura-MCP Server intelligent prompting librar
 This module provides prompts for common content workflow tasks such as moderation,
 tagging, categorization, and distribution workflows.
 """
-from typing import Dict, Any, List, Optional
+
 from .base import BasePrompt
 
 
 class ContentWorkflowPrompts:
     """Collection of content workflow prompts."""
-    
+
     @staticmethod
     def moderation_review() -> BasePrompt:
         """Create a prompt for content moderation review."""
-        prompt = BasePrompt(
-            name="content_moderation_review",
-            description="Review content for moderation issues"
-        )
-        
-        prompt.set_system_message("""
+        prompt = BasePrompt(name="content_moderation_review", description="Review content for moderation issues")
+
+        prompt.set_system_message(
+            """
 You are a content moderation assistant for a video platform. Your task is to review video metadata
 and identify any potential moderation issues. You should check for:
 
@@ -35,9 +33,11 @@ For each issue you identify, provide:
 - A severity level (Low, Medium, High)
 
 Be thorough but fair in your assessment. Focus on clear policy violations rather than subjective judgments.
-""")
-        
-        prompt.set_user_message_template("""
+"""
+        )
+
+        prompt.set_user_message_template(
+            """
 Please review the following video content for moderation issues:
 
 Title: {title}
@@ -48,8 +48,9 @@ Created by: {user_id}
 Category: {category_name}
 
 Additional context: {additional_context}
-""")
-        
+"""
+        )
+
         prompt.add_example(
             user_message="""
 Please review the following video content for moderation issues:
@@ -85,24 +86,25 @@ I've identified several moderation issues with this content:
 
 ## Overall Recommendation
 This content should be rejected as it currently stands, as it appears to violate platform policies against promoting illegal activities. The user should be informed about acceptable content guidelines for cybersecurity education that focus on ethical hacking, security research, or vulnerability disclosure with proper context and disclaimers.
-"""
+""",
         )
-        
+
         prompt.add_required_tool("kaltura.media.get")
         prompt.add_required_tool("kaltura.media.update")
         prompt.add_required_resource("kaltura://media/{entry_id}")
-        
+
         return prompt
-    
+
     @staticmethod
     def auto_tagging() -> BasePrompt:
         """Create a prompt for automatic content tagging."""
         prompt = BasePrompt(
             name="content_auto_tagging",
-            description="Automatically generate relevant tags for content"
+            description="Automatically generate relevant tags for content",
         )
-        
-        prompt.set_system_message("""
+
+        prompt.set_system_message(
+            """
 You are a content tagging assistant for a video platform. Your task is to analyze video metadata
 and generate relevant tags that will improve discoverability and categorization.
 
@@ -115,9 +117,11 @@ When generating tags:
 6. Format as comma-separated values
 
 Generate tags based on the title, description, existing tags, and category information.
-""")
-        
-        prompt.set_user_message_template("""
+"""
+        )
+
+        prompt.set_user_message_template(
+            """
 Please generate relevant tags for the following video content:
 
 Title: {title}
@@ -125,8 +129,9 @@ Description: {description}
 Existing Tags: {tags}
 Duration: {duration} seconds
 Category: {category_name}
-""")
-        
+"""
+        )
+
         prompt.add_example(
             user_message="""
 Please generate relevant tags for the following video content:
@@ -139,24 +144,25 @@ Category: Education
 """,
             assistant_message="""
 python, programming, beginner programming, python tutorial, coding, learn python, python basics, programming tutorial, python for beginners, variables, data types, control structures, functions, coding tutorial, computer science
-"""
+""",
         )
-        
+
         prompt.add_required_tool("kaltura.media.get")
         prompt.add_required_tool("kaltura.media.update")
         prompt.add_required_resource("kaltura://media/{entry_id}")
-        
+
         return prompt
-    
+
     @staticmethod
     def category_suggestion() -> BasePrompt:
         """Create a prompt for suggesting appropriate categories."""
         prompt = BasePrompt(
             name="content_category_suggestion",
-            description="Suggest appropriate categories for content"
+            description="Suggest appropriate categories for content",
         )
-        
-        prompt.set_system_message("""
+
+        prompt.set_system_message(
+            """
 You are a content categorization assistant for a video platform. Your task is to analyze video metadata
 and suggest the most appropriate category or categories for the content.
 
@@ -168,9 +174,11 @@ When suggesting categories:
 5. If multiple categories could apply, rank them in order of relevance
 
 Use only categories that exist in the platform's category system.
-""")
-        
-        prompt.set_user_message_template("""
+"""
+        )
+
+        prompt.set_user_message_template(
+            """
 Please suggest appropriate categories for the following video content:
 
 Title: {title}
@@ -180,8 +188,9 @@ Duration: {duration} seconds
 
 Available Categories:
 {available_categories}
-""")
-        
+"""
+        )
+
         prompt.add_example(
             user_message="""
 Please suggest appropriate categories for the following video content:
@@ -215,26 +224,27 @@ This could be a secondary category as the content is instructional in nature, sh
 - People & Blogs: Too general for this specific fitness-focused content
 
 I recommend categorizing this video under "Health & Fitness" as it most accurately represents the content and will help the target audience discover it.
-"""
+""",
         )
-        
+
         prompt.add_required_tool("kaltura.media.get")
         prompt.add_required_tool("kaltura.media.update")
         prompt.add_required_tool("kaltura.category.list")
         prompt.add_required_resource("kaltura://media/{entry_id}")
         prompt.add_required_resource("kaltura://categories/list")
-        
+
         return prompt
-    
+
     @staticmethod
     def distribution_planning() -> BasePrompt:
         """Create a prompt for content distribution planning."""
         prompt = BasePrompt(
             name="content_distribution_planning",
-            description="Plan optimal distribution strategy for content"
+            description="Plan optimal distribution strategy for content",
         )
-        
-        prompt.set_system_message("""
+
+        prompt.set_system_message(
+            """
 You are a content distribution strategist for a video platform. Your task is to analyze video content
 and suggest the optimal distribution strategy to maximize reach and engagement.
 
@@ -247,9 +257,11 @@ When creating a distribution plan:
 6. Provide a timeline and key performance indicators (KPIs) to track
 
 Be specific and practical in your recommendations, focusing on actionable steps.
-""")
-        
-        prompt.set_user_message_template("""
+"""
+        )
+
+        prompt.set_user_message_template(
+            """
 Please create a distribution plan for the following video content:
 
 Title: {title}
@@ -262,8 +274,9 @@ Key Message: {key_message}
 Call to Action: {call_to_action}
 
 Additional context: {additional_context}
-""")
-        
+"""
+        )
+
         prompt.add_example(
             user_message="""
 Please create a distribution plan for the following video content:
@@ -377,23 +390,24 @@ Additional context: This is part of our Q1 financial planning series, released 6
 - Test different thumbnails to optimize click-through rate
 
 This distribution plan maximizes the timely nature of the content while creating pathways for continued relevance beyond tax season.
-"""
+""",
         )
-        
+
         prompt.add_required_tool("kaltura.media.get")
         prompt.add_required_resource("kaltura://media/{entry_id}")
-        
+
         return prompt
-    
+
     @staticmethod
     def content_approval_workflow() -> BasePrompt:
         """Create a prompt for content approval workflow."""
         prompt = BasePrompt(
             name="content_approval_workflow",
-            description="Guide content through an approval workflow"
+            description="Guide content through an approval workflow",
         )
-        
-        prompt.set_system_message("""
+
+        prompt.set_system_message(
+            """
 You are a content workflow assistant for a video platform. Your task is to guide content through
 the approval process, ensuring all necessary steps are completed and requirements are met.
 
@@ -406,9 +420,11 @@ For each piece of content in the approval workflow:
 6. Recommend actions to move the content forward
 
 Be thorough in your assessment and clear in your recommendations.
-""")
-        
-        prompt.set_user_message_template("""
+"""
+        )
+
+        prompt.set_user_message_template(
+            """
 Please review the following content in the approval workflow:
 
 Title: {title}
@@ -426,8 +442,9 @@ Required Approvals:
 {required_approvals}
 
 Additional context: {additional_context}
-""")
-        
+"""
+        )
+
         prompt.add_example(
             user_message="""
 Please review the following content in the approval workflow:
@@ -507,11 +524,11 @@ The content is currently awaiting legal review with two outstanding approvals:
    - Document any legal concerns raised during review for future roadmap presentations
 
 The content meets quality standards and has appropriate departmental and content approvals, but cannot proceed to publication until the metadata issues are resolved and remaining approvals are obtained.
-"""
+""",
         )
-        
+
         prompt.add_required_tool("kaltura.media.get")
         prompt.add_required_tool("kaltura.media.update")
         prompt.add_required_resource("kaltura://media/{entry_id}")
-        
+
         return prompt

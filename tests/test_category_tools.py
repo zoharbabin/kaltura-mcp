@@ -1,21 +1,19 @@
 """
 Tests for category tools.
 """
-import json
-import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
 
-from KalturaClient.Plugins.Core import (
-    KalturaCategory,
-    KalturaCategoryListResponse
-)
+import json
+from unittest.mock import AsyncMock, MagicMock
+
+import pytest
+from KalturaClient.Plugins.Core import KalturaCategory, KalturaCategoryListResponse
 
 from kaltura_mcp.tools.category import (
-    CategoryListToolHandler,
-    CategoryGetToolHandler,
     CategoryAddToolHandler,
+    CategoryDeleteToolHandler,
+    CategoryGetToolHandler,
+    CategoryListToolHandler,
     CategoryUpdateToolHandler,
-    CategoryDeleteToolHandler
 )
 
 
@@ -57,14 +55,12 @@ async def test_category_get_tool(mock_kaltura_client, mock_category):
     # Setup
     mock_kaltura_client.execute_request.return_value = mock_category
     handler = CategoryGetToolHandler(mock_kaltura_client)
-    
+
     # Execute
     result = await handler.handle({"id": 123})
-    
+
     # Verify
-    mock_kaltura_client.execute_request.assert_called_once_with(
-                "category", "get", id=123
-            )
+    mock_kaltura_client.execute_request.assert_called_once_with("category", "get", id=123)
     assert len(result) == 1
     assert result[0].type == "text"
     response = json.loads(result[0].text)
@@ -78,15 +74,17 @@ async def test_category_add_tool(mock_kaltura_client, mock_category):
     # Setup
     mock_kaltura_client.execute_request.return_value = mock_category
     handler = CategoryAddToolHandler(mock_kaltura_client)
-    
+
     # Execute
-    result = await handler.handle({
-        "name": "Test Category",
-        "description": "Test Description",
-        "tags": "test,category",
-        "parent_id": 0
-    })
-    
+    result = await handler.handle(
+        {
+            "name": "Test Category",
+            "description": "Test Description",
+            "tags": "test,category",
+            "parent_id": 0,
+        }
+    )
+
     # Verify
     mock_kaltura_client.execute_request.assert_called_once()
     assert mock_kaltura_client.execute_request.call_args[0][0] == "category"
@@ -105,14 +103,10 @@ async def test_category_update_tool(mock_kaltura_client, mock_category):
     # Setup
     mock_kaltura_client.execute_request.side_effect = [mock_category, mock_category]
     handler = CategoryUpdateToolHandler(mock_kaltura_client)
-    
+
     # Execute
-    result = await handler.handle({
-        "id": 123,
-        "name": "Updated Category",
-        "description": "Updated Description"
-    })
-    
+    result = await handler.handle({"id": 123, "name": "Updated Category", "description": "Updated Description"})
+
     # Verify
     assert mock_kaltura_client.execute_request.call_count == 2
     assert mock_kaltura_client.execute_request.call_args_list[0][0][0] == "category"
@@ -132,13 +126,10 @@ async def test_category_delete_tool(mock_kaltura_client, mock_category):
     # Setup
     mock_kaltura_client.execute_request.side_effect = [mock_category, True]
     handler = CategoryDeleteToolHandler(mock_kaltura_client)
-    
+
     # Execute
-    result = await handler.handle({
-        "id": 123,
-        "move_entries_to_parent": True
-    })
-    
+    result = await handler.handle({"id": 123, "move_entries_to_parent": True})
+
     # Verify
     assert mock_kaltura_client.execute_request.call_count == 2
     assert mock_kaltura_client.execute_request.call_args_list[0][0][0] == "category"
@@ -158,7 +149,7 @@ async def test_category_list_tool(mock_kaltura_client):
     # Setup
     mock_response = MagicMock(spec=KalturaCategoryListResponse)
     mock_response.totalCount = 2
-    
+
     # Create category objects with proper attributes
     category1 = MagicMock()
     category1.id = 123
@@ -174,7 +165,7 @@ async def test_category_list_tool(mock_kaltura_client):
     category1.depth = 1
     category1.entriesCount = 5
     category1.fullIds = "123"
-    
+
     category2 = MagicMock()
     category2.id = 456
     category2.name = "Category 2"
@@ -189,20 +180,14 @@ async def test_category_list_tool(mock_kaltura_client):
     category2.depth = 1
     category2.entriesCount = 10
     category2.fullIds = "456"
-    
+
     mock_response.objects = [category1, category2]
     mock_kaltura_client.execute_request.return_value = mock_response
     handler = CategoryListToolHandler(mock_kaltura_client)
-    
+
     # Execute
-    result = await handler.handle({
-        "page_size": 10,
-        "page_index": 1,
-        "filter": {
-            "nameLike": "test"
-        }
-    })
-    
+    result = await handler.handle({"page_size": 10, "page_index": 1, "filter": {"nameLike": "test"}})
+
     # Verify
     mock_kaltura_client.execute_request.assert_called_once()
     assert mock_kaltura_client.execute_request.call_args[0][0] == "category"

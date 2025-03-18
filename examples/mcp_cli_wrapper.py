@@ -12,18 +12,13 @@ Prerequisites:
 """
 import json
 import subprocess
-import sys
 import time
+
 
 def run_command(command, capture_output=True):
     """Run a command and return the output."""
     try:
-        result = subprocess.run(
-            command,
-            capture_output=capture_output,
-            text=True,
-            check=True
-        )
+        result = subprocess.run(command, capture_output=capture_output, text=True, check=True)
         return result.stdout
     except subprocess.CalledProcessError as e:
         print(f"Error running command: {e}")
@@ -31,21 +26,17 @@ def run_command(command, capture_output=True):
             print(f"Error output: {e.stderr}")
         return None
 
+
 def main():
     """Run the MCP CLI wrapper."""
     print("Starting Kaltura MCP Server...")
-    
+
     # Start the Kaltura MCP server in the background
-    server_process = subprocess.Popen(
-        ["kaltura-mcp"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True
-    )
-    
+    server_process = subprocess.Popen(["kaltura-mcp"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
     # Wait for the server to start
     time.sleep(2)
-    
+
     try:
         # Check if the MCP CLI tool is installed
         print("Checking for MCP CLI tool...")
@@ -55,39 +46,36 @@ def main():
         else:
             print("MCP CLI tool not found. Please install it with 'pip install mcp[cli]'")
             return
-        
+
         # List tools
         print("\nListing tools...")
         tools_output = run_command(["mcp", "tools", "list"])
         if tools_output:
             print("\n=== Available Tools ===")
             print(tools_output)
-        
+
         # List resources
         print("\nListing resources...")
         resources_output = run_command(["mcp", "resources", "list"])
         if resources_output:
             print("\n=== Available Resources ===")
             print(resources_output)
-        
+
         # Call the media.list tool
         print("\nCalling kaltura.media.list tool...")
-        media_list_args = json.dumps({
-            "page_size": 5,
-            "filter": {}
-        })
+        media_list_args = json.dumps({"page_size": 5, "filter": {}})
         media_list_output = run_command(["mcp", "tools", "call", "kaltura.media.list", media_list_args])
         if media_list_output:
             print("\n=== Media List Result ===")
             print(media_list_output)
-        
+
         # Read the media list resource
         print("\nReading kaltura://media/list resource...")
         media_resource_output = run_command(["mcp", "resources", "read", "kaltura://media/list?page_size=5"])
         if media_resource_output:
             print("\n=== Media List Resource ===")
             print(media_resource_output)
-        
+
     except Exception as e:
         print(f"Error: {e}")
     finally:
@@ -95,6 +83,7 @@ def main():
         print("\nTerminating Kaltura MCP Server...")
         server_process.terminate()
         server_process.wait(timeout=5)
+
 
 if __name__ == "__main__":
     main()

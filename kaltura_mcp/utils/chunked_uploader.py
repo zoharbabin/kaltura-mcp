@@ -6,14 +6,14 @@ using chunked uploading with adaptive chunk sizing. It handles large files
 efficiently by breaking them into manageable chunks and implements retry
 logic for network errors.
 """
+
+import asyncio
+import logging
 import os
 import time
-import logging
-import asyncio
-from typing import Optional, Callable, Any, Dict, Tuple
 
-import anyio
 import aiohttp
+import anyio
 from KalturaClient.Plugins.Core import (
     KalturaUploadToken,
     KalturaUploadTokenStatus,
@@ -21,22 +21,25 @@ from KalturaClient.Plugins.Core import (
 
 logger = logging.getLogger(__name__)
 
+
 class TokenNotFinalizedError(Exception):
     """
     Raised when the Kaltura upload token fails to reach FULL_UPLOAD within the allowed attempts.
-    
+
     This can happen if there are issues with the Kaltura API or if the upload was interrupted.
     """
+
     pass
+
 
 class ChunkedUploader:
     """
     Handles file uploads to Kaltura via chunked uploading with optional adaptive chunk size.
-    
+
     This class provides a robust implementation for uploading files to Kaltura using
     chunked uploading. It supports adaptive chunk sizing based on upload speed and
     implements retry logic for network errors.
-    
+
     Args:
         kaltura_client: KalturaClientWrapper instance
         chunk_size_kb: Initial chunk size in KB (default ~2MB)
@@ -45,11 +48,11 @@ class ChunkedUploader:
         min_chunk_size_kb: Minimum chunk size in KB (adaptive)
         max_chunk_size_kb: Maximum chunk size in KB (adaptive)
         verbose: Enable debug-level logging if True
-    
+
     Raises:
         ValueError: If chunk_size_kb is less than 1
     """
-    
+
     def __init__(
         self,
         kaltura_client,
@@ -72,7 +75,7 @@ class ChunkedUploader:
 
         self.chunk_size_kb = float(chunk_size_kb)
         self.chunk_size_bytes = int(self.chunk_size_kb * 1024)
-        
+
         if self.verbose:
             logger.debug(
                 "Initialized ChunkedUploader with chunk_size=%.2f KB, adaptive_chunking=%s, "
@@ -81,17 +84,17 @@ class ChunkedUploader:
                 self.adaptive_chunking,
                 self.target_upload_time,
                 self.min_chunk_size_kb,
-                self.max_chunk_size_kb
+                self.max_chunk_size_kb,
             )
 
     def _adjust_chunk_size(self, upload_time: float, current_chunk_size_bytes: int) -> None:
         """
         Adjust chunk size based on measured upload time, aiming for target_upload_time.
-        
+
         This method dynamically adjusts the chunk size based on the measured upload speed
         to achieve the target upload time per chunk. It respects the minimum and maximum
         chunk size constraints.
-        
+
         Args:
             upload_time: Time taken to upload the current chunk in seconds
             current_chunk_size_bytes: Size of the current chunk in bytes
@@ -124,19 +127,19 @@ class ChunkedUploader:
     async def upload_file(self, file_path: str) -> str:
         """
         Upload the file in chunks to Kaltura and return the KalturaUploadToken ID.
-        
+
         This method handles the complete file upload process:
         1. Validates the file
         2. Creates an upload token
         3. Uploads the file in chunks
         4. Finalizes the upload
-        
+
         Args:
             file_path: Path to the file to upload
-            
+
         Returns:
             Upload token ID
-            
+
         Raises:
             FileNotFoundError: If the file does not exist
             ValueError: If the path is not a valid file or the file is empty
@@ -177,7 +180,7 @@ class ChunkedUploader:
                             chunk,
                             offset,
                             resume=(offset > 0),
-                            is_final_chunk=is_final_chunk
+                            is_final_chunk=is_final_chunk,
                         )
                         elapsed = time.time() - start_time
 
@@ -194,7 +197,7 @@ class ChunkedUploader:
             await self._finalize_upload_token(upload_token.id, file_size)
             logger.info(f"Successfully uploaded file '{file_path}' with token ID {upload_token.id}")
             return upload_token.id
-            
+
         except aiohttp.ClientError as e:
             logger.error(f"Network error during upload of '{file_path}': {e}")
             raise
@@ -205,14 +208,14 @@ class ChunkedUploader:
     async def _create_upload_token(self, file_path: str, file_size: int) -> KalturaUploadToken:
         """
         Create a Kaltura upload token for the file to be uploaded.
-        
+
         Args:
             file_path: Path to the file
             file_size: Size of the file in bytes
-            
+
         Returns:
             KalturaUploadToken object
-            
+
         Raises:
             Exception: If the Kaltura API call fails
         """
@@ -221,15 +224,10 @@ class ChunkedUploader:
         token.fileSize = file_size
 
         if self.verbose:
-            logger.debug(
-                f"Creating upload token for '{token.fileName}' ({file_size} bytes)."
-            )
+            logger.debug(f"Creating upload token for '{token.fileName}' ({file_size} bytes).")
 
         try:
-            return await self.kaltura_client.execute_request(
-                "uploadToken", "add",
-                uploadToken=token
-            )
+            return await self.kaltura_client.execute_request("uploadToken", "add", uploadToken=token)
         except Exception as e:
             logger.error(f"Failed to create upload token for '{token.fileName}': {e}")
             raise
@@ -241,11 +239,11 @@ class ChunkedUploader:
         chunk: bytes,
         offset: int,
         resume: bool,
-        is_final_chunk: bool
+        is_final_chunk: bool,
     ) -> None:
         """
         Upload a single chunk with retry logic for network errors.
-        
+
         Args:
             session: aiohttp ClientSession for HTTP requests
             upload_token_id: ID of the upload token
@@ -253,65 +251,59 @@ class ChunkedUploader:
             offset: Byte offset in the file
             resume: Whether this is a resumed upload
             is_final_chunk: Whether this is the final chunk
-            
+
         Raises:
             aiohttp.ClientError: If the upload fails after all retries
         """
         max_attempts = 5
         delay = 1.0  # seconds
-        
+
         for attempt in range(1, max_attempts + 1):
             try:
                 # Prepare form data
                 form_data = aiohttp.FormData()
-                form_data.add_field('resume', '1' if resume else '0')
-                form_data.add_field('resumeAt', str(offset))
-                form_data.add_field('finalChunk', '1' if is_final_chunk else '0')
-                form_data.add_field('fileData', chunk, filename=f'chunk_{offset}',
-                                   content_type='application/octet-stream')
-                
+                form_data.add_field("resume", "1" if resume else "0")
+                form_data.add_field("resumeAt", str(offset))
+                form_data.add_field("finalChunk", "1" if is_final_chunk else "0")
+                form_data.add_field(
+                    "fileData",
+                    chunk,
+                    filename=f"chunk_{offset}",
+                    content_type="application/octet-stream",
+                )
+
                 # Get upload URL and parameters
                 upload_url = f"{self.kaltura_client.get_service_url()}/api_v3/service/uploadtoken/action/upload"
                 params = {
                     "uploadTokenId": upload_token_id,
                     "ks": self.kaltura_client.get_ks(),
                 }
-                
+
                 # Upload the chunk
-                async with session.post(
-                    upload_url,
-                    data=form_data,
-                    params=params,
-                    timeout=30
-                ) as response:
+                async with session.post(upload_url, data=form_data, params=params, timeout=30) as response:
                     response.raise_for_status()
                     return
-                    
+
             except (aiohttp.ClientError, TimeoutError, asyncio.TimeoutError) as e:
                 if attempt == max_attempts:
-                    logger.error(
-                        f"Attempt {attempt}/{max_attempts} failed with error: {e}. No more retries."
-                    )
+                    logger.error(f"Attempt {attempt}/{max_attempts} failed with error: {e}. No more retries.")
                     raise
-                logger.warning(
-                    f"Attempt {attempt}/{max_attempts} failed with error: {e}. "
-                    f"Retrying in {delay:.1f}s..."
-                )
+                logger.warning(f"Attempt {attempt}/{max_attempts} failed with error: {e}. " f"Retrying in {delay:.1f}s...")
                 await anyio.sleep(delay)
                 delay *= 2.0  # Exponential backoff
 
     async def _finalize_upload_token(self, upload_token_id: str, file_size: int) -> None:
         """
         Poll until the token is FULL_UPLOAD or fail after several attempts.
-        
+
         This method checks the status of the upload token and waits until it reaches
         the FULL_UPLOAD status, indicating that the upload is complete and the file
         is ready to be used.
-        
+
         Args:
             upload_token_id: ID of the upload token
             file_size: Size of the file in bytes
-            
+
         Raises:
             TokenNotFinalizedError: If the token doesn't reach FULL_UPLOAD status
         """
@@ -320,11 +312,8 @@ class ChunkedUploader:
 
         for attempt in range(1, max_attempts + 1):
             try:
-                token = await self.kaltura_client.execute_request(
-                    "uploadToken", "get",
-                    uploadTokenId=upload_token_id
-                )
-                
+                token = await self.kaltura_client.execute_request("uploadToken", "get", uploadTokenId=upload_token_id)
+
                 if await self._validate_upload_token_status(token, file_size):
                     # If it's FULL_UPLOAD, we're done
                     return
@@ -347,26 +336,20 @@ class ChunkedUploader:
                     raise
 
         # If we exhaust all attempts, raise an error
-        raise TokenNotFinalizedError(
-            f"Upload token {upload_token_id} not finalized after {max_attempts} attempts."
-        )
+        raise TokenNotFinalizedError(f"Upload token {upload_token_id} not finalized after {max_attempts} attempts.")
 
     async def _validate_upload_token_status(self, upload_token, file_size: int) -> bool:
         """
         Check if the upload token status is FULL_UPLOAD (completed).
-        
+
         Args:
             upload_token: KalturaUploadToken object
             file_size: Expected file size in bytes
-            
+
         Returns:
             True if the token status is FULL_UPLOAD, False otherwise
         """
-        status_value = (
-            upload_token.status.getValue()
-            if hasattr(upload_token.status, "getValue")
-            else upload_token.status
-        )
+        status_value = upload_token.status.getValue() if hasattr(upload_token.status, "getValue") else upload_token.status
         if status_value == KalturaUploadTokenStatus.FULL_UPLOAD:
             logger.info(
                 f"Upload token {upload_token.id} finalized: {upload_token.fileName} - "
@@ -375,7 +358,5 @@ class ChunkedUploader:
             return True
 
         if self.verbose:
-            logger.debug(
-                f"Current upload token status for {upload_token.id}: {status_value} (not FULL_UPLOAD)."
-            )
+            logger.debug(f"Current upload token status for {upload_token.id}: {status_value} (not FULL_UPLOAD).")
         return False

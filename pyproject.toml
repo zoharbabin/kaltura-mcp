@@ -25,12 +25,14 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=7.0.0",
-    "pytest-asyncio>=0.20.0",
-    "anyio[trio]>=4.0.0",
-    "black>=23.0.0",
-    "mypy>=1.0.0",
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.25.0",
+    "pytest-cov>=4.1.0",
     "ruff>=0.0.1",
+    "mypy>=1.0.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "types-PyYAML>=6.0.0",
 ]
 
 [project.scripts]
@@ -40,17 +42,22 @@ kaltura-mcp = "kaltura_mcp.server:main"
 packages = ["kaltura_mcp"]
 
 [tool.black]
-line-length = 100
+line-length = 130
 target-version = ["py310"]
-
-[tool.mypy]
-python_version = "3.10"
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
+include = '\.pyi?$'
 
 [tool.ruff]
-line-length = 100
+line-length = 130
 target-version = "py310"
+
+[tool.ruff.lint]
 select = ["E", "F", "B", "I"]
+ignore = ["E501"]  # Ignore line length errors
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]  # Ignore unused imports in __init__.py files
+
+[tool.pytest.ini_options]
+asyncio_mode = "strict"

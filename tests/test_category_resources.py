@@ -1,19 +1,14 @@
 """
 Tests for category resources.
 """
+
 import json
+from unittest.mock import AsyncMock, MagicMock
+
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
+from KalturaClient.Plugins.Core import KalturaCategory, KalturaCategoryListResponse
 
-from KalturaClient.Plugins.Core import (
-    KalturaCategory,
-    KalturaCategoryListResponse
-)
-
-from kaltura_mcp.resources.category import (
-    CategoryResourceHandler,
-    CategoryListResourceHandler
-)
+from kaltura_mcp.resources.category import CategoryListResourceHandler, CategoryResourceHandler
 
 
 @pytest.fixture
@@ -54,14 +49,12 @@ async def test_category_resource_handler(mock_kaltura_client, mock_category):
     # Setup
     mock_kaltura_client.execute_request.return_value = mock_category
     handler = CategoryResourceHandler(mock_kaltura_client)
-    
+
     # Execute
     result = await handler.handle("kaltura://category/123")
-    
+
     # Verify
-    mock_kaltura_client.execute_request.assert_called_once_with(
-        "category", "get", id=123
-    )
+    mock_kaltura_client.execute_request.assert_called_once_with("category", "get", id=123)
     response = json.loads(result[0].text)
     assert response["id"] == 123
     assert response["name"] == "Test Category"
@@ -73,7 +66,7 @@ async def test_category_resource_handler_invalid_uri(mock_kaltura_client):
     """Test the category resource handler with an invalid URI."""
     # Setup
     handler = CategoryResourceHandler(mock_kaltura_client)
-    
+
     # Execute and verify
     with pytest.raises(ValueError, match="Invalid category URI"):
         await handler.handle("kaltura://category/")
@@ -85,7 +78,7 @@ async def test_category_list_resource_handler(mock_kaltura_client):
     # Setup
     mock_response = MagicMock(spec=KalturaCategoryListResponse)
     mock_response.totalCount = 2
-    
+
     # Create category objects with proper attributes
     category1 = MagicMock()
     category1.id = 123
@@ -101,7 +94,7 @@ async def test_category_list_resource_handler(mock_kaltura_client):
     category1.depth = 1
     category1.entriesCount = 5
     category1.fullIds = "123"
-    
+
     category2 = MagicMock()
     category2.id = 456
     category2.name = "Category 2"
@@ -116,14 +109,14 @@ async def test_category_list_resource_handler(mock_kaltura_client):
     category2.depth = 1
     category2.entriesCount = 10
     category2.fullIds = "456"
-    
+
     mock_response.objects = [category1, category2]
     mock_kaltura_client.execute_request.return_value = mock_response
     handler = CategoryListResourceHandler(mock_kaltura_client)
-    
+
     # Execute
     result = await handler.handle("kaltura://category/list?page_size=10&page_index=1&name_like=test")
-    
+
     # Verify
     mock_kaltura_client.execute_request.assert_called_once()
     assert mock_kaltura_client.execute_request.call_args[0][0] == "category"
@@ -139,7 +132,7 @@ def test_category_resource_handler_matches_uri():
     """Test the category resource handler URI matching."""
     # Setup
     handler = CategoryResourceHandler(None)
-    
+
     # Execute and verify
     assert handler.matches_uri("kaltura://category/123")
     assert not handler.matches_uri("kaltura://category/")
@@ -151,7 +144,7 @@ def test_category_list_resource_handler_matches_uri():
     """Test the category list resource handler URI matching."""
     # Setup
     handler = CategoryListResourceHandler(None)
-    
+
     # Execute and verify
     assert handler.matches_uri("kaltura://category/list")
     assert handler.matches_uri("kaltura://category/list?page_size=10")
@@ -163,10 +156,10 @@ def test_category_resource_definition():
     """Test the category resource definition."""
     # Setup
     handler = CategoryResourceHandler(None)
-    
+
     # Execute
     definition = handler.get_resource_definition()
-    
+
     # Verify
     assert "category" in str(definition.uri)
     assert "categoryId" in str(definition.uri)
@@ -179,10 +172,10 @@ def test_category_list_resource_definition():
     """Test the category list resource definition."""
     # Setup
     handler = CategoryListResourceHandler(None)
-    
+
     # Execute
     definition = handler.get_resource_definition()
-    
+
     # Verify
     assert str(definition.uri) == "kaltura://category/list"
     assert definition.name == "Kaltura Category List"

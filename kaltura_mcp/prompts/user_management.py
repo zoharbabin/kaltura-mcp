@@ -4,22 +4,23 @@ User management prompts for the Kaltura-MCP Server intelligent prompting library
 This module provides prompts for user management tasks such as role assignment,
 permission management, user activity analysis, and user engagement strategies.
 """
-from typing import Dict, Any, List, Optional
+
 from .base import BasePrompt
 
 
 class UserManagementPrompts:
     """Collection of user management prompts."""
-    
+
     @staticmethod
     def role_assignment() -> BasePrompt:
         """Create a prompt for user role assignment."""
         prompt = BasePrompt(
             name="user_role_assignment",
-            description="Recommend appropriate user roles based on responsibilities and requirements"
+            description="Recommend appropriate user roles based on responsibilities and requirements",
         )
-        
-        prompt.set_system_message("""
+
+        prompt.set_system_message(
+            """
 You are a user management assistant for a video platform. Your task is to recommend
 appropriate user roles and permissions based on the user's responsibilities and requirements.
 
@@ -32,9 +33,11 @@ When recommending user roles:
 6. Provide clear justification for your recommendations
 
 Recommend roles that align with the user's needs while maintaining appropriate security boundaries.
-""")
-        
-        prompt.set_user_message_template("""
+"""
+        )
+
+        prompt.set_user_message_template(
+            """
 Please recommend appropriate user roles for the following user:
 
 User Information:
@@ -56,8 +59,9 @@ Available Roles:
 Additional context: {additional_context}
 
 Please provide role recommendations with justification for each recommendation.
-""")
-        
+"""
+        )
+
         prompt.add_example(
             user_message="""
 Please recommend appropriate user roles for the following user:
@@ -128,24 +132,25 @@ When assigning the Manager role to Sarah, consider:
 2. Setting up appropriate content categories/channels to define where she has publishing rights
 3. Configuring analytics access to focus on marketing-related metrics
 4. Documenting the role assignment and reviewing permissions quarterly as responsibilities may change
-"""
+""",
         )
-        
+
         prompt.add_required_tool("kaltura.user.get")
         prompt.add_required_tool("kaltura.user.update")
         prompt.add_required_resource("kaltura://users/{user_id}")
-        
+
         return prompt
-    
+
     @staticmethod
     def permission_management() -> BasePrompt:
         """Create a prompt for permission management."""
         prompt = BasePrompt(
             name="permission_management",
-            description="Analyze and optimize user permissions for security and efficiency"
+            description="Analyze and optimize user permissions for security and efficiency",
         )
-        
-        prompt.set_system_message("""
+
+        prompt.set_system_message(
+            """
 You are a permission management specialist for a video platform. Your task is to analyze
 user permissions and recommend optimizations for security and efficiency.
 
@@ -158,9 +163,11 @@ When analyzing permissions:
 6. Provide clear, actionable recommendations
 
 Your analysis should help maintain the principle of least privilege while ensuring users can perform their required tasks efficiently.
-""")
-        
-        prompt.set_user_message_template("""
+"""
+        )
+
+        prompt.set_user_message_template(
+            """
 Please analyze the permissions for the following user:
 
 User Information:
@@ -183,8 +190,9 @@ Security Policies:
 Additional context: {additional_context}
 
 Please provide a permission analysis with specific recommendations for optimization.
-""")
-        
+"""
+        )
+
         prompt.add_example(
             user_message="""
 Please analyze the permissions for the following user:
@@ -343,24 +351,25 @@ I recommend creating an optimized "Content Editor" role with only the necessary 
 3. Monitor for any workflow disruptions for 2 weeks
 4. Apply the optimized role to other Content Editors if successful
 5. Document the permission changes for compliance purposes
-"""
+""",
         )
-        
+
         prompt.add_required_tool("kaltura.user.get")
         prompt.add_required_tool("kaltura.user.update")
         prompt.add_required_resource("kaltura://users/{user_id}")
-        
+
         return prompt
-    
+
     @staticmethod
     def user_activity_analysis() -> BasePrompt:
         """Create a prompt for user activity analysis."""
         prompt = BasePrompt(
             name="user_activity_analysis",
-            description="Analyze user activity patterns and provide insights"
+            description="Analyze user activity patterns and provide insights",
         )
-        
-        prompt.set_system_message("""
+
+        prompt.set_system_message(
+            """
 You are a user activity analyst for a video platform. Your task is to analyze user activity
 patterns and provide insights that can help improve user engagement, identify potential issues,
 and optimize the platform experience.
@@ -374,9 +383,11 @@ When analyzing user activity:
 6. Consider both individual user patterns and aggregate trends
 
 Your analysis should be data-driven, insightful, and focused on actionable recommendations.
-""")
-        
-        prompt.set_user_message_template("""
+"""
+        )
+
+        prompt.set_user_message_template(
+            """
 Please analyze the following user activity data:
 
 User Information:
@@ -396,8 +407,9 @@ Platform Benchmarks:
 Additional context: {additional_context}
 
 Please provide an analysis of the user activity with insights and recommendations.
-""")
-        
+"""
+        )
+
         prompt.add_example(
             user_message="""
 Please analyze the following user activity data:
@@ -531,23 +543,24 @@ Despite current challenges, the marketing team's increased production volume pre
 ## Conclusion
 
 The marketing team is producing content at an impressive volume but needs targeted support to address quality, efficiency, and technical challenges. With focused interventions in training, workflow, and technical support, the team could significantly improve performance metrics while maintaining their above-benchmark production levels.
-"""
+""",
         )
-        
+
         prompt.add_required_tool("kaltura.user.get")
         prompt.add_required_resource("kaltura://users/{user_id}")
-        
+
         return prompt
-    
+
     @staticmethod
     def user_engagement_strategy() -> BasePrompt:
         """Create a prompt for user engagement strategies."""
         prompt = BasePrompt(
             name="user_engagement_strategy",
-            description="Develop strategies to improve user engagement and adoption"
+            description="Develop strategies to improve user engagement and adoption",
         )
-        
-        prompt.set_system_message("""
+
+        prompt.set_system_message(
+            """
 You are a user engagement strategist for a video platform. Your task is to develop
 strategies to improve user engagement, increase platform adoption, and enhance the
 overall user experience.
@@ -561,9 +574,11 @@ When developing engagement strategies:
 6. Consider both short-term tactics and long-term strategic initiatives
 
 Your recommendations should be practical, actionable, and tailored to the specific context of the organization.
-""")
-        
-        prompt.set_user_message_template("""
+"""
+        )
+
+        prompt.set_user_message_template(
+            """
 Please develop a user engagement strategy for the following scenario:
 
 Organization Context:
@@ -586,8 +601,9 @@ Previous Initiatives:
 Additional context: {additional_context}
 
 Please provide a comprehensive user engagement strategy with specific recommendations.
-""")
-        
+"""
+        )
+
         prompt.add_example(
             user_message="""
 Please develop a user engagement strategy for the following scenario:
@@ -835,10 +851,10 @@ This strategy leverages the upcoming academic year start and recent platform upg
 ## Conclusion
 
 This comprehensive engagement strategy addresses the specific needs of the university environment while targeting the defined goals for platform adoption and utilization. By focusing on the critical pre-semester period, leveraging peer influence, enhancing system integration, and providing contextual support, we can drive significant improvements in engagement metrics while delivering measurable ROI.
-"""
+""",
         )
-        
+
         prompt.add_required_tool("kaltura.user.get")
         prompt.add_required_resource("kaltura://users/{user_id}")
-        
+
         return prompt

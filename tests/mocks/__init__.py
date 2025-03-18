@@ -7,4 +7,4 @@ to enable testing without requiring real external services.
 
 from .mock_kaltura_api import MockKalturaAPI, MockKalturaClientWrapper
 
-__all__ = ['MockKalturaAPI', 'MockKalturaClientWrapper']
+__all__ = ["MockKalturaAPI", "MockKalturaClientWrapper"]

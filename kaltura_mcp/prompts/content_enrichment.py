@@ -4,22 +4,23 @@ Content enrichment prompts for the Kaltura-MCP Server intelligent prompting libr
 This module provides prompts for content enrichment tasks such as generating video summaries,
 descriptions, AI-driven subtitles, and translations.
 """
-from typing import Dict, Any, List, Optional
+
 from .base import BasePrompt
 
 
 class ContentEnrichmentPrompts:
     """Collection of content enrichment prompts."""
-    
+
     @staticmethod
     def video_summary() -> BasePrompt:
         """Create a prompt for generating video summaries."""
         prompt = BasePrompt(
             name="video_summary_generation",
-            description="Generate concise and informative summaries of video content"
+            description="Generate concise and informative summaries of video content",
         )
-        
-        prompt.set_system_message("""
+
+        prompt.set_system_message(
+            """
 You are a video content summarization assistant. Your task is to create concise, informative summaries
 of video content based on available metadata, transcripts, or descriptions.
 
@@ -32,9 +33,11 @@ When creating video summaries:
 6. Focus on factual information from the content
 
 Create summaries that help viewers quickly understand what the video is about and decide if they want to watch it.
-""")
-        
-        prompt.set_user_message_template("""
+"""
+        )
+
+        prompt.set_user_message_template(
+            """
 Please generate a concise summary for the following video:
 
 Title: {title}
@@ -51,8 +54,9 @@ Transcript/Content:
 Additional context: {additional_context}
 
 Please provide a summary of approximately 3-5 sentences that captures the main points and purpose of this video.
-""")
-        
+"""
+        )
+
         prompt.add_example(
             user_message="""
 Please generate a concise summary for the following video:
@@ -88,24 +92,25 @@ Please provide a summary of approximately 3-5 sentences that captures the main p
 """,
             assistant_message="""
 This educational video provides a comprehensive overview of climate change, explaining its scientific basis as the enhanced greenhouse effect caused by human activities that release carbon dioxide and other gases into the atmosphere. It presents evidence of climate change including rising global temperatures, melting ice sheets, and changing weather patterns, while detailing the consequences such as threats to coastal communities, agriculture, and ecosystems. The video concludes with actionable solutions at both individual and systemic levels, including transitioning to renewable energy, improving efficiency, and protecting forests, emphasizing that while climate change is a serious challenge, we have the knowledge and tools to address it effectively.
-"""
+""",
         )
-        
+
         prompt.add_required_tool("kaltura.media.get")
         prompt.add_required_tool("kaltura.media.update")
         prompt.add_required_resource("kaltura://media/{entry_id}")
-        
+
         return prompt
-    
+
     @staticmethod
     def description_generation() -> BasePrompt:
         """Create a prompt for generating video descriptions."""
         prompt = BasePrompt(
             name="video_description_generation",
-            description="Generate engaging and informative video descriptions"
+            description="Generate engaging and informative video descriptions",
         )
-        
-        prompt.set_system_message("""
+
+        prompt.set_system_message(
+            """
 You are a video description specialist. Your task is to create engaging, informative, and SEO-friendly
 descriptions for video content based on available metadata, transcripts, or summaries.
 
@@ -118,9 +123,11 @@ When creating video descriptions:
 6. End with a clear call-to-action when appropriate
 
 Create descriptions that accurately represent the content while encouraging viewers to watch the video.
-""")
-        
-        prompt.set_user_message_template("""
+"""
+        )
+
+        prompt.set_user_message_template(
+            """
 Please generate an engaging description for the following video:
 
 Title: {title}
@@ -138,8 +145,9 @@ Key Points to Include:
 Additional context: {additional_context}
 
 Please provide a description of approximately 150-200 words that will engage viewers and improve discoverability.
-""")
-        
+"""
+        )
+
         prompt.add_example(
             user_message="""
 Please generate an engaging description for the following video:
@@ -180,24 +188,25 @@ This is Part 3 of our Advanced Python series, taught by an instructor with 15 ye
 👉 All code samples available on our GitHub repository (link in comments)
 
 Whether you're building complex applications, optimizing performance, or just wanting to write more elegant Python code, these advanced techniques will transform how you approach Python development.
-"""
+""",
         )
-        
+
         prompt.add_required_tool("kaltura.media.get")
         prompt.add_required_tool("kaltura.media.update")
         prompt.add_required_resource("kaltura://media/{entry_id}")
-        
+
         return prompt
-    
+
     @staticmethod
     def subtitle_generation() -> BasePrompt:
         """Create a prompt for generating video subtitles."""
         prompt = BasePrompt(
             name="subtitle_generation",
-            description="Generate accurate and well-formatted subtitles for video content"
+            description="Generate accurate and well-formatted subtitles for video content",
         )
-        
-        prompt.set_system_message("""
+
+        prompt.set_system_message(
+            """
 You are a subtitle generation assistant. Your task is to create accurate, well-formatted subtitles
 for video content based on audio transcripts or descriptions.
 
@@ -210,9 +219,11 @@ When creating subtitles:
 6. Maintain the original meaning and tone of the speech
 
 Format subtitles in SRT format with sequential numbering, timecodes (HH:MM:SS,MS), and subtitle text.
-""")
-        
-        prompt.set_user_message_template("""
+"""
+        )
+
+        prompt.set_user_message_template(
+            """
 Please generate subtitles for the following video content:
 
 Title: {title}
@@ -228,8 +239,9 @@ Audio Cues:
 Additional context: {additional_context}
 
 Please provide subtitles in SRT format, with appropriate timing and formatting.
-""")
-        
+"""
+        )
+
         prompt.add_example(
             user_message="""
 Please generate subtitles for the following video content:
@@ -395,23 +407,24 @@ on your smartphone.
 29
 00:02:55,000 --> 00:03:00,000
 [Outro music]
-"""
+""",
         )
-        
+
         prompt.add_required_tool("kaltura.media.get")
         prompt.add_required_resource("kaltura://media/{entry_id}")
-        
+
         return prompt
-    
+
     @staticmethod
     def content_translation() -> BasePrompt:
         """Create a prompt for translating video content."""
         prompt = BasePrompt(
             name="content_translation",
-            description="Translate video content while preserving meaning and context"
+            description="Translate video content while preserving meaning and context",
         )
-        
-        prompt.set_system_message("""
+
+        prompt.set_system_message(
+            """
 You are a video content translation specialist. Your task is to translate video content
 (titles, descriptions, subtitles) from one language to another while preserving the original
 meaning, context, and tone.
@@ -425,9 +438,11 @@ When translating content:
 6. Preserve the emotional tone and impact of the original
 
 Provide translations that feel natural to native speakers of the target language while staying true to the source content.
-""")
-        
-        prompt.set_user_message_template("""
+"""
+        )
+
+        prompt.set_user_message_template(
+            """
 Please translate the following video content from {source_language} to {target_language}:
 
 Title: {title}
@@ -443,8 +458,9 @@ Special terminology or proper nouns (do not translate):
 Additional context: {additional_context}
 
 Please provide the translation with appropriate formatting and structure for the target language.
-""")
-        
+"""
+        )
+
         prompt.add_example(
             user_message="""
 Please translate the following video content from English to Spanish:
@@ -492,24 +508,25 @@ Quizás el avance más crítico ha sido en el almacenamiento de energía. Las te
 A pesar de estos avances, persisten desafíos significativos. La naturaleza intermitente de las renovables todavía plantea retos de integración a la red. Los materiales para baterías y paneles solares enfrentan limitaciones de suministro. Y la infraestructura energética existente fue construida en torno a los combustibles fósiles, requiriendo inversiones sustanciales para la transición hacia un sistema basado en renovables.
 
 El apoyo político será crucial para acelerar esta transición. La fijación de precios del carbono, los estándares de cartera renovable y la financiación dirigida a la investigación pueden ayudar a superar estas barreras. Los países y empresas que lideren esta transición no solo ayudarán a abordar el cambio climático, sino que también se posicionarán a la vanguardia de la próxima revolución energética.
-"""
+""",
         )
-        
+
         prompt.add_required_tool("kaltura.media.get")
         prompt.add_required_tool("kaltura.media.update")
         prompt.add_required_resource("kaltura://media/{entry_id}")
-        
+
         return prompt
-    
+
     @staticmethod
     def thumbnail_suggestion() -> BasePrompt:
         """Create a prompt for suggesting video thumbnails."""
         prompt = BasePrompt(
             name="thumbnail_suggestion",
-            description="Suggest effective thumbnail concepts for video content"
+            description="Suggest effective thumbnail concepts for video content",
         )
-        
-        prompt.set_system_message("""
+
+        prompt.set_system_message(
+            """
 You are a thumbnail design consultant for a video platform. Your task is to suggest effective
 thumbnail concepts that will maximize viewer engagement and click-through rates.
 
@@ -522,9 +539,11 @@ When suggesting thumbnail concepts:
 6. Provide specific, actionable design recommendations
 
 Your suggestions should be detailed enough for a designer to create the thumbnail based on your description.
-""")
-        
-        prompt.set_user_message_template("""
+"""
+        )
+
+        prompt.set_user_message_template(
+            """
 Please suggest thumbnail concepts for the following video:
 
 Title: {title}
@@ -539,8 +558,9 @@ Video Content Summary:
 Additional context: {additional_context}
 
 Please provide 3 distinct thumbnail concepts with detailed descriptions.
-""")
-        
+"""
+        )
+
         prompt.add_example(
             user_message="""
 Please suggest thumbnail concepts for the following video:
@@ -640,10 +660,10 @@ The presenter's enthusiastic expression and the papers transforming in mid-air, 
 
 **Recommendation:**
 Based on your channel's previous success with before/after concepts and bright colors, Concept 1 would likely perform best as it clearly communicates transformation while maintaining your minimalist aesthetic. The split-screen approach instantly communicates value to viewers scanning through videos, and the contrasting colors will stand out in recommendation feeds.
-"""
+""",
         )
-        
+
         prompt.add_required_tool("kaltura.media.get")
         prompt.add_required_resource("kaltura://media/{entry_id}")
-        
+
         return prompt

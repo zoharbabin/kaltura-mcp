@@ -1,19 +1,14 @@
 """
 Tests for user resources.
 """
+
 import json
+from unittest.mock import AsyncMock, MagicMock
+
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
+from KalturaClient.Plugins.Core import KalturaUser, KalturaUserListResponse
 
-from KalturaClient.Plugins.Core import (
-    KalturaUser,
-    KalturaUserListResponse
-)
-
-from kaltura_mcp.resources.user import (
-    UserResourceHandler,
-    UserListResourceHandler
-)
+from kaltura_mcp.resources.user import UserListResourceHandler, UserResourceHandler
 
 
 @pytest.fixture
@@ -49,14 +44,12 @@ async def test_user_resource_handler(mock_kaltura_client, mock_user):
     # Setup
     mock_kaltura_client.execute_request.return_value = mock_user
     handler = UserResourceHandler(mock_kaltura_client)
-    
+
     # Execute
     result = await handler.handle("kaltura://user/test_user_id")
-    
+
     # Verify
-    mock_kaltura_client.execute_request.assert_called_once_with(
-        "user", "get", userId="test_user_id"
-    )
+    mock_kaltura_client.execute_request.assert_called_once_with("user", "get", userId="test_user_id")
     response = json.loads(result[0].text)
     assert response["id"] == "test_user_id"
     assert response["fullName"] == "Test User Full Name"
@@ -68,7 +61,7 @@ async def test_user_resource_handler_invalid_uri(mock_kaltura_client):
     """Test the user resource handler with an invalid URI."""
     # Setup
     handler = UserResourceHandler(mock_kaltura_client)
-    
+
     # Execute and verify
     with pytest.raises(ValueError, match="Invalid user URI"):
         await handler.handle("kaltura://user/")
@@ -80,7 +73,7 @@ async def test_user_list_resource_handler(mock_kaltura_client):
     # Setup
     mock_response = MagicMock(spec=KalturaUserListResponse)
     mock_response.totalCount = 2
-    
+
     # Create user objects with proper attributes
     user1 = MagicMock()
     user1.id = "user1"
@@ -97,7 +90,7 @@ async def test_user_list_resource_handler(mock_kaltura_client):
     user1.isAdmin = False
     user1.type = MagicMock()
     user1.type.value = 0
-    
+
     user2 = MagicMock()
     user2.id = "user2"
     user2.partnerId = 123
@@ -113,14 +106,14 @@ async def test_user_list_resource_handler(mock_kaltura_client):
     user2.isAdmin = True
     user2.type = MagicMock()
     user2.type.value = 0
-    
+
     mock_response.objects = [user1, user2]
     mock_kaltura_client.execute_request.return_value = mock_response
     handler = UserListResourceHandler(mock_kaltura_client)
-    
+
     # Execute
     result = await handler.handle("kaltura://user/list?page_size=10&page_index=1&id_or_name_starts_with=user")
-    
+
     # Verify
     mock_kaltura_client.execute_request.assert_called_once()
     assert mock_kaltura_client.execute_request.call_args[0][0] == "user"
@@ -136,7 +129,7 @@ def test_user_resource_handler_matches_uri():
     """Test the user resource handler URI matching."""
     # Setup
     handler = UserResourceHandler(None)
-    
+
     # Execute and verify
     assert handler.matches_uri("kaltura://user/test_user_id")
     assert not handler.matches_uri("kaltura://user/")
@@ -148,7 +141,7 @@ def test_user_list_resource_handler_matches_uri():
     """Test the user list resource handler URI matching."""
     # Setup
     handler = UserListResourceHandler(None)
-    
+
     # Execute and verify
     assert handler.matches_uri("kaltura://user/list")
     assert handler.matches_uri("kaltura://user/list?page_size=10")
@@ -160,10 +153,10 @@ def test_user_resource_definition():
     """Test the user resource definition."""
     # Setup
     handler = UserResourceHandler(None)
-    
+
     # Execute
     definition = handler.get_resource_definition()
-    
+
     # Verify
     assert "user" in str(definition.uri)
     assert "userId" in str(definition.uri)
@@ -176,10 +169,10 @@ def test_user_list_resource_definition():
     """Test the user list resource definition."""
     # Setup
     handler = UserListResourceHandler(None)
-    
+
     # Execute
     definition = handler.get_resource_definition()
-    
+
     # Verify
     assert str(definition.uri) == "kaltura://user/list"
     assert definition.name == "Kaltura User List"
