@@ -52,7 +52,9 @@ def guess_mime_type(file_path: str) -> str:
             # Use python-magic to detect MIME type from file content
             mime_type = magic.from_file(file_path, mime=True)
         except Exception as e:
-            logger.warning(f"python-magic failed to detect MIME type: {e}. Falling back to mimetypes.")
+            logger.warning(
+                f"python-magic failed to detect MIME type: {e}. Falling back to mimetypes."
+            )
             mime_type, _ = mimetypes.guess_type(file_path, strict=False)
     else:
         # Fallback to extension-based detection

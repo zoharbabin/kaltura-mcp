@@ -259,7 +259,9 @@ class TestMediaIntegration:
                         "description": "Updated by integration test"
                     })
                     break  # Success, exit the retry loop
-                except (ValueError, RuntimeError, ConnectionError):
+                except (ValueError, RuntimeError, ConnectionError) as e:
+                    # Log the error but continue with mock response
+                    print(f"Error updating entry: {e}")
                     if retry < max_retries - 1:  # Don't sleep on the last iteration
                         print(
                             f"Retry {retry+1}/{max_retries}: Failed to update entry, waiting {retry_delay} seconds..."

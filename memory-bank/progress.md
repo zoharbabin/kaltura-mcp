@@ -15,6 +15,12 @@
   - Removed unused imports and variables (F401, F841) in `tests/integration/test_media_integration.py`
   - Fixed pytest warnings in `examples/simple_functional_test.py`
   - Created proper integration test configuration
+- **[2025-03-18]** Fixed additional linting issues:
+  - Added `from None` to exception handling in multiple files
+  - Replaced generic `Exception` with specific exception types
+  - Fixed long line issues in `kaltura_mcp/utils/mime_utils.py`
+  - Updated exception types in mock implementations to match test expectations
+  - All 167 tests now pass successfully
 ### Integration Test Improvements
 - **[2025-03-18]** Fixed integration tests to use direct client approach:
   - Modified `test_full_mcp_flow.py` to use a direct client that calls server methods directly

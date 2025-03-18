@@ -66,7 +66,7 @@ class CategoryGetToolHandler(KalturaToolHandler):
             logger.error(f"Error getting category: {e}")
             # Always raise the exception for category not found errors
             if "CATEGORY_NOT_FOUND" in str(e) or "not found" in str(e).lower():
-                raise ValueError(f"Category not found: {category_id}")
+                raise ValueError(f"Category not found: {category_id}") from None
             # For other errors, return an error response
             return [
                 types.TextContent(

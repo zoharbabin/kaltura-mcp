@@ -58,7 +58,7 @@ class EnhancedKalturaMcpServer(KalturaMcpServer):
                 except (ValueError, TypeError, RuntimeError) as e:
                     execution_time = time.time() - start_time
                     logger.error(f"MCP TOOL ERROR: {_name} failed after {execution_time:.2f}s: {e}")
-                    raise
+                    raise e from None
             
             handler.handle = logged_handle
         
@@ -77,7 +77,7 @@ class EnhancedKalturaMcpServer(KalturaMcpServer):
                 except (ValueError, TypeError, RuntimeError) as e:
                     execution_time = time.time() - start_time
                     logger.error(f"MCP RESOURCE ERROR: {_name} failed after {execution_time:.2f}s: {e}")
-                    raise
+                    raise e from None
             
             handler.handle = logged_handle
     
@@ -114,7 +114,7 @@ class EnhancedKalturaMcpServer(KalturaMcpServer):
             except Exception as e:
                 execution_time = time.time() - start_time
                 logger.error(f"MCP ERROR: call_tool {name} failed after {execution_time:.2f}s: {e}")
-                raise
+                raise e from None
         
         # List resources handler
         async def list_resources_handler() -> list[types.Resource]:
@@ -141,7 +141,7 @@ class EnhancedKalturaMcpServer(KalturaMcpServer):
                     except Exception as e:
                         execution_time = time.time() - start_time
                         logger.error(f"MCP ERROR: read_resource {uri} failed after {execution_time:.2f}s: {e}")
-                        raise
+                        raise e from None
             
             logger.error(f"MCP ERROR: Unknown resource: {uri}")
             raise ValueError(f"Unknown resource: {uri}")

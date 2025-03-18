@@ -166,7 +166,7 @@ class UserListResourceHandler(KalturaResourceHandler):
             
         except Exception as e:
             logger.error(f"Error listing users: {e}")
-            raise ValueError(f"Error listing users: {str(e)}")
+            raise ValueError(f"Error listing users: {str(e)}") from None
     
     def get_resource_definition(self) -> types.Resource:
         """Return the resource definition."""

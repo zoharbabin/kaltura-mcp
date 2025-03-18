@@ -93,6 +93,7 @@ class EnhancedKalturaClientWrapper(KalturaClientWrapper):
                         api_logger.info(f"API RESULT FIRST ITEM [{request_id}]: {json.dumps(first_item_dict, indent=2)}")
             except (TypeError, ValueError, AttributeError) as e:
                 api_logger.info(f"API RESULT [{request_id}]: Could not serialize result: {e}")
+                # Don't raise the exception, just log it
             
             return result
             
