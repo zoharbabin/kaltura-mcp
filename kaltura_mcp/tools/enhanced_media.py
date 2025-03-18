@@ -264,7 +264,9 @@ class EnhancedMediaUploadToolHandler(KalturaToolHandler):
                                     await asyncio.sleep(retry_delay)
                                     retry_delay *= 2  # Exponential backoff
                                 else:
-                                    logger.error(f"Data entry verification failed after {max_retries} attempts")
+                                    logger.error(
+                                        f"Data entry verification failed after {max_retries} attempts"
+                                    )
                                     # Continue anyway, the entry might still be valid
                     except Exception as e:
                         logger.error(f"Error in data entry creation or verification: {e}")
@@ -511,9 +513,7 @@ class EnhancedMediaUploadToolHandler(KalturaToolHandler):
             )
             
             if not hasattr(final_entry, 'id') or not final_entry.id:
-                logger.error(
-                    "Final document entry has no valid ID"
-                )
+                logger.error("Final document entry has no valid ID")
                 # If final_entry has no ID, return the original document_entry which should have an ID
                 return document_entry
                 

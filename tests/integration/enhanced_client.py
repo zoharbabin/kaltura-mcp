@@ -91,7 +91,7 @@ class EnhancedKalturaClientWrapper(KalturaClientWrapper):
                             if not attr.startswith('_') and not callable(getattr(first_item, attr)):
                                 first_item_dict[attr] = str(getattr(first_item, attr))
                         api_logger.info(f"API RESULT FIRST ITEM [{request_id}]: {json.dumps(first_item_dict, indent=2)}")
-            except Exception as e:
+            except (TypeError, ValueError, AttributeError) as e:
                 api_logger.info(f"API RESULT [{request_id}]: Could not serialize result: {e}")
             
             return result

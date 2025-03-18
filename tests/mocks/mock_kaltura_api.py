@@ -380,7 +380,7 @@ class MockKalturaAPI:
     async def get_media_entry(self, entry_id: str) -> KalturaMediaEntry:
         """Get a media entry by ID."""
         if entry_id not in self.media_entries:
-            raise Exception(f"Media entry not found: {entry_id}")
+            raise ValueError(f"Media entry not found: {entry_id}")
         
         return self.media_entries[entry_id]
     
@@ -481,7 +481,7 @@ class MockKalturaAPI:
     async def get_category(self, category_id: int) -> KalturaCategory:
         """Get a category by ID."""
         if category_id not in self.categories:
-            raise Exception(f"Category not found: {category_id}")
+            raise KeyError(f"Category not found: {category_id}")
         
         return self.categories[category_id]
     
@@ -610,7 +610,7 @@ class MockKalturaAPI:
     async def get_user(self, user_id: str) -> KalturaUser:
         """Get a user by ID."""
         if user_id not in self.users:
-            raise Exception(f"User not found: {user_id}")
+            raise KeyError(f"User not found: {user_id}")
         
         return self.users[user_id]
     

@@ -55,7 +55,7 @@ class EnhancedKalturaMcpServer(KalturaMcpServer):
                     execution_time = time.time() - start_time
                     logger.info(f"MCP TOOL RESPONSE: {_name} completed in {execution_time:.2f}s")
                     return result
-                except Exception as e:
+                except (ValueError, TypeError, RuntimeError) as e:
                     execution_time = time.time() - start_time
                     logger.error(f"MCP TOOL ERROR: {_name} failed after {execution_time:.2f}s: {e}")
                     raise
@@ -74,7 +74,7 @@ class EnhancedKalturaMcpServer(KalturaMcpServer):
                     execution_time = time.time() - start_time
                     logger.info(f"MCP RESOURCE RESPONSE: {_name} completed in {execution_time:.2f}s")
                     return result
-                except Exception as e:
+                except (ValueError, TypeError, RuntimeError) as e:
                     execution_time = time.time() - start_time
                     logger.error(f"MCP RESOURCE ERROR: {_name} failed after {execution_time:.2f}s: {e}")
                     raise

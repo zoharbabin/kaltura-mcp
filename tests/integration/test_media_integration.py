@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 import tempfile
 import asyncio
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock
 
 from mcp import types
 
@@ -259,7 +259,7 @@ class TestMediaIntegration:
                         "description": "Updated by integration test"
                     })
                     break  # Success, exit the retry loop
-                except Exception:
+                except (ValueError, RuntimeError, ConnectionError):
                     if retry < max_retries - 1:  # Don't sleep on the last iteration
                         print(
                             f"Retry {retry+1}/{max_retries}: Failed to update entry, waiting {retry_delay} seconds..."

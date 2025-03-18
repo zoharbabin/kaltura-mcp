@@ -89,7 +89,7 @@ class TestMockKalturaAPI:
         await api.delete_media_entry(added_entry.id)
         
         # Verify entry is deleted
-        with pytest.raises(Exception):
+        with pytest.raises((ValueError, KeyError)):
             await api.get_media_entry(added_entry.id)
     
     async def test_list_categories(self):
@@ -168,7 +168,7 @@ class TestMockKalturaAPI:
         await api.delete_category(added_category.id)
         
         # Verify category is deleted
-        with pytest.raises(Exception):
+        with pytest.raises((ValueError, KeyError)):
             await api.get_category(added_category.id)
     
     async def test_list_users(self):
@@ -250,7 +250,7 @@ class TestMockKalturaAPI:
         await api.delete_user(user_id)
         
         # Verify user is deleted
-        with pytest.raises(Exception):
+        with pytest.raises((ValueError, KeyError)):
             await api.get_user(user_id)
 
 class TestMockKalturaClientWrapper:
