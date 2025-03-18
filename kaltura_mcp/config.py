@@ -196,41 +196,6 @@ def _parse_config_data(data: dict) -> Config:
     
     return config
 
-def _load_config_from_env() -> Config:
-    """Load configuration from environment variables."""
-    kaltura_config = KalturaConfig(
-        partner_id=int(os.environ.get("KALTURA_PARTNER_ID", 0)),
-        admin_secret=os.environ.get("KALTURA_ADMIN_SECRET", ""),
-        user_id=os.environ.get("KALTURA_USER_ID", "admin"),
-        service_url=os.environ.get("KALTURA_SERVICE_URL", "https://www.kaltura.com/api_v3"),
-    )
-    
-    server_config = ServerConfig(
-        log_level=os.environ.get("KALTURA_MCP_LOG_LEVEL", "INFO"),
-        transport=os.environ.get("KALTURA_MCP_TRANSPORT", "stdio"),
-        port=int(os.environ.get("KALTURA_MCP_PORT", 8000)),
-        host=os.environ.get("KALTURA_MCP_HOST", "127.0.0.1"),
-        debug=os.environ.get("KALTURA_MCP_DEBUG", "").lower() in ("true", "1", "yes"),
-    )
-    
-    logging_config = LoggingConfig(
-        level=os.environ.get("KALTURA_MCP_LOG_LEVEL", "INFO"),
-        file=os.environ.get("KALTURA_MCP_LOG_FILE"),
-    )
-    
-    context_config = ContextConfig(
-        default_strategy=os.environ.get("KALTURA_MCP_CONTEXT_STRATEGY", "pagination"),
-        max_entries=int(os.environ.get("KALTURA_MCP_MAX_ENTRIES", 100)),
-        max_context_size=int(os.environ.get("KALTURA_MCP_MAX_CONTEXT_SIZE", 10000)),
-    )
-    
-    return Config(
-        kaltura=kaltura_config,
-        server=server_config,
-        logging=logging_config,
-        context=context_config,
-    )
-
 def _validate_config(config: Config) -> None:
     """Validate configuration."""
     if config.kaltura.partner_id <= 0:
