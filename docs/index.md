@@ -40,6 +40,7 @@ The Kaltura MCP Server enables Large Language Models (LLMs) to interact with the
 ## Development
 
 - [Contributing](../CONTRIBUTING.md) - How to contribute to the project
+- [CI/CD Guide](guides/ci-cd.md) - Continuous Integration and Deployment
 - [Testing](guides/testing.md) - How to run tests
 - [Development Setup](guides/development-setup.md) - Setting up a development environment
 - [Code Style](guides/code-style.md) - Code style guidelines

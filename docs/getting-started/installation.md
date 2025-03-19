@@ -11,9 +11,55 @@ Before you begin, ensure you have the following:
 - pip or uv (recommended) package manager
 - A Kaltura account with API access
 
-## Installation Methods
+## Using the Setup Script
 
-There are several ways to install the Kaltura-MCP Server:
+The easiest way to install and configure the Kaltura-MCP Server is to use the provided setup script:
+
+```bash
+# Clone the repository
+git clone https://github.com/your-organization/kaltura-mcp.git
+cd kaltura-mcp
+
+# Run the setup script
+python setup_kaltura_mcp.py
+```
+
+The setup script will:
+1. Check prerequisites
+2. Create a virtual environment (optional)
+3. Set up configuration files
+4. Install dependencies
+5. Run verification tests
+6. Validate the environment
+
+### Setup Script Options
+
+The setup script supports several command-line options:
+
+```
+usage: setup_kaltura_mcp.py [-h] [--interactive] [--non-interactive] [--skip-venv] [--skip-tests] [--skip-validation] [--dev-deps]
+
+Set up the Kaltura MCP environment
+
+options:
+  -h, --help         show this help message and exit
+  --interactive      Enable interactive configuration
+  --non-interactive  Disable interactive prompts (for CI/CD)
+  --skip-venv        Skip virtual environment creation
+  --skip-tests       Skip running tests
+  --skip-validation  Skip environment validation
+  --dev-deps         Install development dependencies
+```
+
+For example, to set up the environment interactively:
+
+```bash
+python setup_kaltura_mcp.py --interactive
+```
+
+## Manual Installation Methods
+
+If you prefer to install manually, there are several ways to install the Kaltura-MCP Server:
 
 ### Method 1: Install from Source
 
@@ -71,7 +117,14 @@ pip install -e ".[dev]"
 
 # Using uv
 uv pip install -e ".[dev]"
+
+# Using the setup script
+python setup_kaltura_mcp.py --dev-deps
 ```
+
+## Docker Installation
+
+For Docker-based installation, see the [Docker Guide](docker.md).
 
 ## Verifying the Installation
 
@@ -83,6 +136,9 @@ pip list | grep kaltura-mcp
 
 # Try importing the package
 python -c "import kaltura_mcp; print(kaltura_mcp.__version__)"
+
+# Using the setup script
+python setup_kaltura_mcp.py --skip-venv --skip-tests
 ```
 
 ## Troubleshooting
@@ -121,6 +177,30 @@ sudo pip install -e .
 
 # On Windows (run Command Prompt as Administrator)
 pip install -e .
+```
+
+#### System Dependencies
+
+On Linux, you may need to install libmagic:
+
+```bash
+# Debian/Ubuntu
+sudo apt-get install libmagic1
+
+# CentOS/RHEL
+sudo yum install file-devel
+```
+
+On macOS, you can use Homebrew:
+
+```bash
+brew install libmagic
+```
+
+On Windows, you may need to install the python-magic-bin package:
+
+```bash
+pip install python-magic-bin
 ```
 
 ## Next Steps
