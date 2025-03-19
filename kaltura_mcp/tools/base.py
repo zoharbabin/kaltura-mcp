@@ -4,7 +4,7 @@ Base classes for Kaltura tool handlers.
 
 import json
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Union, Optional
+from typing import Any, Dict, List, Union
 
 import mcp.types as types
 

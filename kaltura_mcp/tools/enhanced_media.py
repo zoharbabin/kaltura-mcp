@@ -10,7 +10,7 @@ import asyncio
 import json
 import logging
 import os
-from typing import Any, Dict, List, Union, Optional
+from typing import Any, Dict, List, Union
 
 import mcp.types as types
 from KalturaClient.Plugins.Core import (
@@ -18,9 +18,7 @@ from KalturaClient.Plugins.Core import (
     KalturaMediaEntry,
     KalturaUploadedFileTokenResource,
 )
-from KalturaClient.Plugins.Document import (
-    KalturaDocumentEntry,
-)
+from KalturaClient.Plugins.Document import KalturaDocumentEntry
 
 from kaltura_mcp.tools.base import KalturaJSONEncoder, KalturaToolHandler
 from kaltura_mcp.utils.chunked_uploader import ChunkedUploader, TokenNotFinalizedError

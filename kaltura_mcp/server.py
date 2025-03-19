@@ -3,7 +3,7 @@
 Kaltura MCP Server main module.
 """
 import logging
-from typing import Any, Dict, List, Union, Optional, Callable, Coroutine
+from typing import Any, Dict, List, Union
 
 import anyio
 import mcp.types as types

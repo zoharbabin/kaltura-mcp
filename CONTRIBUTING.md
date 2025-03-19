@@ -197,7 +197,9 @@ except Exception:  # No 'as e' if e is not used
     pass
 ```
 
-### 5. Import Ordering (E402)
+### 5. Import Management
+
+#### Import Ordering (E402)
 
 Move all imports to the top of the file:
 
@@ -217,6 +219,47 @@ import sys
 def some_function():
     pass
 ```
+
+#### Import Sorting (I001)
+
+Organize imports according to PEP 8 guidelines:
+
+```python
+# Before (unsorted)
+import json
+from kaltura_mcp.utils.mime_utils import guess_mime_type
+import os
+from typing import Any, Dict
+import mcp.types as types
+
+# After (properly sorted)
+import json
+import os
+from typing import Any, Dict
+
+import mcp.types as types
+from kaltura_mcp.utils.mime_utils import guess_mime_type
+```
+
+#### Unused Imports (F401)
+
+Remove imports that are not used in the file:
+
+```python
+# Before
+from typing import Any, Dict, List, Optional, Union  # List, Optional, Union are unused
+
+def process_data(data: Any) -> Dict:
+    return {"result": data}
+
+# After
+from typing import Any, Dict
+
+def process_data(data: Any) -> Dict:
+    return {"result": data}
+```
+
+You can use `python run_tests.py --lint` to identify unused imports and import sorting issues, and `python run_tests.py --fix-all` to automatically fix many of these issues.
 
 ## Importance of Running CI Checks Locally
 

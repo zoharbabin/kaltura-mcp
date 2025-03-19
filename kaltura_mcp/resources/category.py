@@ -5,7 +5,7 @@ Category-related resource handlers for Kaltura MCP Server.
 import json
 import logging
 import re
-from typing import Any, Dict, List, Pattern, Union
+from typing import List, Pattern
 
 import mcp.types as types
 from KalturaClient.Plugins.Core import KalturaCategoryFilter, KalturaFilterPager
