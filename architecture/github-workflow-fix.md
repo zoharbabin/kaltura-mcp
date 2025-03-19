@@ -20,6 +20,12 @@ Found 87 errors in 19 files (checked 31 source files)
 Error: Process completed with exit code 1.
 ```
 
+3. Docker image push permission issue:
+```
+ERROR: failed to push ghcr.io/zoharbabin/kaltura-mcp:latest: unexpected status from POST request to https://ghcr.io/v2/zoharbabin/kaltura-mcp/blobs/uploads/: 403 Forbidden
+Error: buildx failed with: ERROR: failed to solve: failed to push ghcr.io/zoharbabin/kaltura-mcp:latest: unexpected status from POST request to https://ghcr.io/v2/zoharbabin/kaltura-mcp/blobs/uploads/: 403 Forbidden
+```
+
 ## Root Cause Analysis
 
 After analyzing the project configuration and dependencies, the following issues were identified:
@@ -112,9 +118,33 @@ strategy:
    - Updated mypy configuration to ignore missing library stubs
    - Updated GitHub workflow to use the mypy configuration file
 
+### 4. GitHub Container Registry Permissions
+
+1. **Added workflow permissions** to allow pushing to GitHub Container Registry:
+   ```yaml
+   permissions:
+     contents: read
+     packages: write
+   ```
+
+2. This explicitly grants the workflow:
+   - `contents: read` - Permission to read the repository contents (which is the default)
+   - `packages: write` - Permission to write to packages, which includes pushing to the GitHub Container Registry (ghcr.io)
+
+## Root Cause Analysis for Docker Push Issue
+
+The Docker build and push step was failing with a 403 Forbidden error when trying to push to the GitHub Container Registry (ghcr.io). This occurred because:
+
+1. By default, the `GITHUB_TOKEN` used in GitHub Actions workflows has limited permissions for security reasons
+2. The workflow was using the default `GITHUB_TOKEN` for authentication but didn't have explicit permission to write to packages
+3. Since GitHub Actions v6, workflows require explicit permissions to be granted for certain operations, including pushing to the GitHub Container Registry
+
+The solution was to add explicit permissions to the workflow file to grant write access to packages, which allows the Docker image to be pushed to the GitHub Container Registry.
+
 ## Additional Recommendations
 
 1. Consider updating the project documentation to clearly state the Python version requirements
 2. Ensure the Dockerfile uses a compatible Python version (3.10 or higher)
 3. If backward compatibility with Python 3.8 or 3.9 is desired in the future, investigate if the MCP package can be made compatible with those versions
 4. Consider adding more type stubs for third-party libraries or contributing to their type stub projects
+5. For more granular control, consider adding job-level permissions instead of workflow-level permissions if only specific jobs need certain permissions
