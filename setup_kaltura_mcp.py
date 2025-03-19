@@ -12,17 +12,13 @@ This script sets up the Kaltura MCP project by:
 """
 
 import argparse
-import importlib.util
-import json
 import os
-import platform
 import shutil
 import socket
 import subprocess
 import sys
-import time
 from pathlib import Path
-from typing import Optional, Union, Tuple
+from typing import Optional, Tuple
 
 
 def check_prerequisites():
@@ -70,8 +66,8 @@ def check_prerequisites():
     
     # Check network connectivity to Kaltura API
     try:
-        import urllib.request
         import urllib.error
+        import urllib.request
         try:
             with urllib.request.urlopen("https://www.kaltura.com/api_v3/service/system/action/ping", timeout=5) as response:
                 if response.status == 200:
@@ -213,8 +209,6 @@ def setup_config_files(interactive=False):
 def install_dependencies(pip_path=None, python_path=None, dev_dependencies=True):
     """Install dependencies."""
     print("Installing dependencies...")
-    
-    pip_cmd = pip_path if pip_path else f"{sys.executable} -m pip"
     
     try:
         # Install the package in development mode
