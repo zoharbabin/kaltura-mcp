@@ -19,6 +19,7 @@ jobs:
       contents: read
       packages: write
       id-token: write  # Needed for provenance attestation
+      security-events: write  # Needed for uploading SARIF results
 
     steps:
       - name: Checkout repository
@@ -79,6 +80,7 @@ jobs:
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
         if: always()
+        continue-on-error: true  # Make this step optional
         with:
           sarif_file: 'trivy-results.sarif'
             
