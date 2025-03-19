@@ -6,7 +6,7 @@ This quick reference guide provides essential commands and configurations for se
 
 ### Clone Repository
 ```bash
-git clone https://github.com/kaltura/kaltura-mcp-public.git
+git clone https://github.com/zoharbabin/kaltura-mcp.git
 cd kaltura-mcp-public
 ```
 

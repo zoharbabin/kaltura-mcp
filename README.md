@@ -39,7 +39,7 @@ The easiest way to get started is with Docker:
 
 ```bash
 # Clone the repository
-git clone https://github.com/kaltura/kaltura-mcp.git
+git clone https://github.com/zoharbabin/kaltura-mcp.git
 cd kaltura-mcp
 
 # Build and run with Docker Compose
@@ -50,7 +50,7 @@ docker-compose up
 
 ```bash
 # Clone the repository
-git clone https://github.com/kaltura/kaltura-mcp.git
+git clone https://github.com/zoharbabin/kaltura-mcp.git
 cd kaltura-mcp
 
 # Create a virtual environment (Python 3.10 or higher required)

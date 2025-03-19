@@ -46,4 +46,4 @@ The Kaltura MCP Server enables Large Language Models (LLMs) to interact with the
 
 ## Support
 
-If you encounter any issues or have questions, please [open an issue](https://github.com/kaltura/kaltura-mcp-public/issues) on GitHub.
+If you encounter any issues or have questions, please [open an issue](https://github.com/zoharbabin/kaltura-mcp/issues) on GitHub.

@@ -30,7 +30,7 @@ You have two options for installing the Kaltura MCP server: directly from source
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/kaltura/kaltura-mcp-public.git
+   git clone https://github.com/zoharbabin/kaltura-mcp.git
    cd kaltura-mcp-public
    ```
 
@@ -51,7 +51,7 @@ If you prefer using Docker:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/kaltura/kaltura-mcp-public.git
+   git clone https://github.com/zoharbabin/kaltura-mcp.git
    cd kaltura-mcp-public
    ```
 
