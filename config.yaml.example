@@ -10,7 +10,7 @@ kaltura:
 
 # Server configuration
 server:
-  host: "127.0.0.1"  # Server host
+  host: "0.0.0.0"  # Server host (use 0.0.0.0 for Docker to allow external connections)
   port: 8000  # Server port
   debug: false  # Enable debug mode
 

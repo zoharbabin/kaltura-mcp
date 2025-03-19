@@ -113,6 +113,8 @@ docker run -p 8000:8000 -v $(pwd)/config.yaml:/app/config.yaml kaltura-mcp
 
 ## Configuration
 
+### Using a Configuration File
+
 When using Docker, you need to configure the Kaltura MCP server by mounting a configuration file into the container. The configuration file should be in YAML or JSON format and contain your Kaltura API credentials and other settings.
 
 For Docker, it's important to set the host to `0.0.0.0` in your configuration file to allow connections from outside the container:
@@ -122,6 +124,38 @@ server:
   host: "0.0.0.0"  # Important: Use 0.0.0.0 to allow external connections
   port: 8000
 ```
+
+### Using Environment Variables
+
+Alternatively, you can configure the Kaltura MCP server using environment variables. This is particularly useful for sensitive information that you don't want to store in a configuration file:
+
+```bash
+# Run the container with environment variables
+docker run -p 8000:8000 \
+  -e KALTURA_PARTNER_ID=123456 \
+  -e KALTURA_ADMIN_SECRET=your-admin-secret \
+  -e KALTURA_USER_ID=your-user-id \
+  -e KALTURA_SERVICE_URL=https://www.kaltura.com/api_v3 \
+  -e SERVER_HOST=0.0.0.0 \
+  -e SERVER_PORT=8000 \
+  ghcr.io/zoharbabin/kaltura-mcp:latest
+```
+
+Available environment variables:
+
+| Environment Variable | Description | Default Value |
+|---------------------|-------------|---------------|
+| `KALTURA_PARTNER_ID` | Your Kaltura partner ID | None (required) |
+| `KALTURA_ADMIN_SECRET` | Your Kaltura admin secret | None (required) |
+| `KALTURA_USER_ID` | Your Kaltura user ID | None (required) |
+| `KALTURA_SERVICE_URL` | Kaltura API endpoint | `https://www.kaltura.com/api_v3` |
+| `SERVER_HOST` | Server host | `0.0.0.0` |
+| `SERVER_PORT` | Server port | `8000` |
+| `SERVER_DEBUG` | Enable debug mode | `false` |
+| `LOGGING_LEVEL` | Logging level | `INFO` |
+| `CONTEXT_DEFAULT_STRATEGY` | Default context management strategy | `pagination` |
+| `CONTEXT_MAX_ENTRIES` | Maximum number of entries | `100` |
+| `CONTEXT_MAX_CONTEXT_SIZE` | Maximum context size in tokens | `10000` |
 
 ## Running Tests in Docker
 
@@ -210,6 +244,72 @@ The Docker images use the following tagging scheme:
 3. **Use environment variables**: Use environment variables for sensitive information
 4. **Test the Docker image**: Always test the Docker image before deploying
 5. **Keep the Docker image small**: The Dockerfile is optimized to create a small image
+
+## Interacting with the Server
+
+Once the Kaltura MCP server is running in Docker, you can interact with it in several ways:
+
+### Using the MCP CLI
+
+The MCP CLI is a command-line tool for interacting with MCP servers:
+
+```bash
+# Install the MCP CLI
+pip install mcp-cli
+
+# Connect to the MCP server
+mcp-cli connect http://localhost:8000
+
+# List available tools
+mcp-cli tools list
+
+# Call a tool
+mcp-cli tools call media_get --args '{"entry_id": "0_abc123"}'
+
+# Access a resource
+mcp-cli resources read media://0_abc123
+```
+
+### Using Python Clients
+
+You can use the example Python clients provided in the `examples/` directory:
+
+```bash
+# Simple client example
+python examples/simple_client.py
+
+# Complete test example
+python examples/complete_test.py
+
+# Working MCP client example
+python examples/working_mcp_client.py
+```
+
+### Using HTTP Requests
+
+You can interact with the server using HTTP requests:
+
+```bash
+# Get server information
+curl http://localhost:8000/mcp/info
+
+# List available tools
+curl http://localhost:8000/mcp/tools
+
+# Call a tool
+curl -X POST http://localhost:8000/mcp/tools/call \
+  -H "Content-Type: application/json" \
+  -d '{"name": "media_get", "arguments": {"entry_id": "0_abc123"}}'
+
+# Access a resource
+curl http://localhost:8000/mcp/resources/read \
+  -H "Content-Type: application/json" \
+  -d '{"uri": "media://0_abc123"}'
+```
+
+### Using with Claude
+
+To use the Kaltura MCP server with Claude, see the [Using with Claude](../examples/using_with_claude.md) guide.
 
 ## Next Steps
 
