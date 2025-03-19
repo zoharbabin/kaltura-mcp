@@ -10,6 +10,10 @@ This section provides guides for using the Kaltura-MCP Server effectively.
 - [Context Management Strategies](context-management-strategies.md): Guide to using context management strategies
 - [Error Handling](error-handling.md): Guide to handling errors
 - [Authentication](authentication.md): Guide to authentication
+- [Claude Integration Setup](claude-integration-setup.md): Guide to setting up and using Kaltura MCP with Claude
+- [Claude Integration Architecture](claude-integration-architecture.md): Architectural overview of Claude integration
+- [Claude Integration Quick Reference](claude-integration-quick-reference.md): Quick reference for Claude integration
+- [Claude Integration Best Practices](claude-integration-best-practices.md): Best practices for Claude integration
 
 ## Overview
 
@@ -79,3 +83,45 @@ The [Authentication](authentication.md) guide provides detailed information on h
 - Configuring authentication settings
 - Handling session expiration
 - Using different authentication methods
+
+## Claude Integration
+
+The Claude integration guides provide comprehensive information on using the Kaltura MCP server with Claude and other MCP-compatible AI assistants:
+
+### Setup and Configuration
+
+The [Claude Integration Setup](claude-integration-setup.md) guide walks you through the process of:
+
+- Installing and configuring the Kaltura MCP server
+- Integrating the server with Claude Desktop
+- Testing the integration
+- Using Claude to manage your Kaltura media library
+
+### Architecture and Design
+
+The [Claude Integration Architecture](claude-integration-architecture.md) provides an architectural overview of:
+
+- System components and their interactions
+- Data flow between Claude, the MCP server, and Kaltura API
+- Configuration architecture
+- Security considerations
+
+### Quick Reference
+
+The [Claude Integration Quick Reference](claude-integration-quick-reference.md) offers a concise reference for:
+
+- Essential installation and configuration commands
+- Claude Desktop configuration examples
+- Available tools and resources
+- Example Claude prompts
+- Troubleshooting tips
+
+### Best Practices
+
+The [Claude Integration Best Practices](claude-integration-best-practices.md) guide outlines recommended practices for:
+
+- Server deployment and security configuration
+- Claude integration and prompt engineering
+- Performance optimization and media handling
+- User experience design
+- Monitoring and maintenance

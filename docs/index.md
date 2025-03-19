@@ -15,8 +15,10 @@ The Kaltura MCP Server enables Large Language Models (LLMs) to interact with the
 
 ## Guides
 
-- [Using with Claude](../examples/using_with_claude.md) - How to use the server with Claude
-- [MCP CLI Guide](../examples/mcp_cli_guide.md) - How to use the MCP CLI with the server
+- [Claude Integration Setup](guides/claude-integration-setup.md) - How to set up and use the server with Claude
+- [Claude Integration Architecture](guides/claude-integration-architecture.md) - Architectural overview of Claude integration
+- [Claude Integration Quick Reference](guides/claude-integration-quick-reference.md) - Quick reference for Claude integration
+- [Claude Integration Best Practices](guides/claude-integration-best-practices.md) - Best practices for Claude integration
 - [Context Management](guides/context-management.md) - Understanding context management strategies
 - [Resource Handlers](guides/resource-handlers.md) - Working with resource handlers
 - [Tool Handlers](guides/tool-handlers.md) - Working with tool handlers
@@ -33,7 +35,6 @@ The Kaltura MCP Server enables Large Language Models (LLMs) to interact with the
 
 - [Example Applications](../examples/README.md) - Example applications using the Kaltura MCP server
 - [Python Client](../examples/simple_demo_client.py) - Simple Python client example
-- [Using with Claude](../examples/using_with_claude.md) - Using the server with Claude
 - [MCP CLI Usage](../examples/mcp_cli_guide.md) - Using the MCP CLI with the server
 
 ## Development

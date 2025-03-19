@@ -1,6 +1,12 @@
 # Using Kaltura MCP with Claude
 
-This guide explains how to use the Kaltura MCP server with Claude or other LLMs that support the Model Context Protocol (MCP).
+This guide provides a quick overview of how to use the Kaltura MCP server with Claude or other LLMs that support the Model Context Protocol (MCP).
+
+> **Note**: For comprehensive documentation on Claude integration, please refer to the following guides:
+> - [Claude Integration Setup](../docs/guides/claude-integration-setup.md) - Detailed setup instructions
+> - [Claude Integration Architecture](../docs/guides/claude-integration-architecture.md) - Architectural overview
+> - [Claude Integration Quick Reference](../docs/guides/claude-integration-quick-reference.md) - Command reference
+> - [Claude Integration Best Practices](../docs/guides/claude-integration-best-practices.md) - Recommended practices
 
 ## Prerequisites
 
@@ -102,8 +108,6 @@ Here are your 5 most recent media entries:
    **Type**: Audio
    **Duration**: 15:30
 
-Would you like to see more details about any of these entries?
-
 **User**: Tell me more about the Marketing Video 2025.
 
 **Claude**: Here are the details for the Marketing Video 2025:
@@ -134,7 +138,9 @@ Would you like to see more details about any of these entries?
 - **Views**: 45
 - **Direct URL**: https://cdnapisec.kaltura.com/p/12345/sp/1234500/playManifest/entryId/0_abc123/format/url/protocol/https
 
-Would you like me to perform any actions with this media entry?
+## Next Steps
+
+For more detailed information on using the Kaltura MCP server with Claude, including advanced configuration, architecture details, and best practices, please refer to the comprehensive guides in the [docs/guides](../docs/guides/) directory.
 
 ## Conclusion
 
