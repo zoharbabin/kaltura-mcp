@@ -35,7 +35,25 @@ The `kaltura-mcp-public` repository contains the complete, self-contained Kaltur
 
 ### Using Docker
 
-The easiest way to get started is with Docker:
+#### Option 1: Using Pre-built Docker Image
+
+The easiest way to get started is with our pre-built multi-architecture Docker image (supports both x86_64/amd64 and ARM64/Apple Silicon):
+
+```bash
+# Pull the latest image
+docker pull ghcr.io/zoharbabin/kaltura-mcp:latest
+
+# Create a config file
+cp config.yaml.example config.yaml
+# Edit config.yaml with your Kaltura API credentials
+
+# Run the container
+docker run -p 8000:8000 -v $(pwd)/config.yaml:/app/config.yaml ghcr.io/zoharbabin/kaltura-mcp:latest
+```
+
+#### Option 2: Building Locally with Docker Compose
+
+Alternatively, you can build the image locally:
 
 ```bash
 # Clone the repository

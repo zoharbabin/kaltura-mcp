@@ -12,11 +12,29 @@ Before you begin, ensure you have the following:
 
 ## Quick Start
 
-The easiest way to get started with Kaltura MCP using Docker is with Docker Compose:
+### Using Pre-built Multi-architecture Docker Image
+
+The easiest way to get started is with our pre-built multi-architecture Docker image from GitHub Container Registry, which supports both x86_64/amd64 and ARM64/Apple Silicon architectures:
+
+```bash
+# Pull the latest image
+docker pull ghcr.io/zoharbabin/kaltura-mcp:latest
+
+# Create a configuration file
+cp config.yaml.example config.yaml
+# Edit config.yaml with your Kaltura API credentials
+
+# Run the container
+docker run -p 8000:8000 -v $(pwd)/config.yaml:/app/config.yaml ghcr.io/zoharbabin/kaltura-mcp:latest
+```
+
+### Using Docker Compose
+
+Alternatively, you can build the image locally using Docker Compose:
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-organization/kaltura-mcp.git
+git clone https://github.com/zoharbabin/kaltura-mcp.git
 cd kaltura-mcp
 
 # Create a configuration file
@@ -156,12 +174,42 @@ Or with Docker Compose:
 docker-compose logs
 ```
 
+## Multi-architecture Docker Images
+
+The Kaltura MCP Docker images are built for multiple architectures:
+
+- **linux/amd64**: For Intel/AMD processors (standard x86_64 architecture)
+- **linux/arm64**: For ARM-based processors (including Apple Silicon M1/M2/M3)
+
+This means you can run the Docker image on various platforms without compatibility issues. When you pull the image from GitHub Container Registry, Docker automatically selects the appropriate architecture for your system.
+
+### Using a Specific Architecture
+
+If you need to use a specific architecture, you can specify it when pulling the image:
+
+```bash
+# For AMD64 (Intel/AMD)
+docker pull --platform linux/amd64 ghcr.io/zoharbabin/kaltura-mcp:latest
+
+# For ARM64 (Apple Silicon)
+docker pull --platform linux/arm64 ghcr.io/zoharbabin/kaltura-mcp:latest
+```
+
+### Image Tags
+
+The Docker images use the following tagging scheme:
+
+- `latest`: The most recent build from the main branch
+- `vX.Y.Z`: Specific version releases (e.g., `v1.0.0`)
+- `<commit-sha>`: Images tagged with the Git commit SHA for precise version control
+
 ## Best Practices
 
-1. **Mount configuration files**: Mount configuration files from the host to avoid rebuilding the image
-2. **Use environment variables**: Use environment variables for sensitive information
-3. **Test the Docker image**: Always test the Docker image before deploying
-4. **Keep the Docker image small**: The Dockerfile is optimized to create a small image
+1. **Use the pre-built images**: Use the pre-built multi-architecture images from GitHub Container Registry when possible
+2. **Mount configuration files**: Mount configuration files from the host to avoid rebuilding the image
+3. **Use environment variables**: Use environment variables for sensitive information
+4. **Test the Docker image**: Always test the Docker image before deploying
+5. **Keep the Docker image small**: The Dockerfile is optimized to create a small image
 
 ## Next Steps
 
