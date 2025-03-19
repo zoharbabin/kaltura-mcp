@@ -68,7 +68,7 @@ class BasePrompt:
 
     def to_yaml(self) -> str:
         """Convert the prompt to a YAML string."""
-        return yaml.dump(self.to_dict(), sort_keys=False)
+        return str(yaml.dump(self.to_dict(), sort_keys=False))
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "BasePrompt":

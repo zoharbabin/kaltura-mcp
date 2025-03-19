@@ -65,6 +65,9 @@ strategy:
 
    [mypy-KalturaClient]
    ignore_missing_imports = true
+   
+   [mypy-yaml]
+   ignore_missing_imports = true
    ```
 
 3. **Updated the GitHub workflow** to use the updated mypy configuration:
@@ -74,6 +77,25 @@ strategy:
        # Copy mypy.ini to ensure consistent configuration
        cp mypy.ini /tmp/mypy.ini
        mypy --config-file=/tmp/mypy.ini kaltura_mcp
+   ```
+
+### 3. YAML Import and Return Type Errors
+
+1. **Fixed missing library stubs for yaml**:
+   - Added configuration to ignore missing imports for yaml in mypy.ini:
+   ```ini
+   [mypy-yaml]
+   ignore_missing_imports = true
+   ```
+
+2. **Fixed return type error in to_yaml() method**:
+   - In `kaltura_mcp/prompts/base.py`, explicitly cast the return value to str:
+   ```python
+   # Before:
+   return yaml.dump(self.to_dict(), sort_keys=False)
+   
+   # After:
+   return str(yaml.dump(self.to_dict(), sort_keys=False))
    ```
 
 ## Implementation Notes
