@@ -26,10 +26,10 @@ class McpJSONEncoder(json.JSONEncoder):
     def default(self, o: Any) -> Any:
         """
         Handle MCP objects.
-        
+
         Args:
             o: The object to serialize
-            
+
         Returns:
             A JSON serializable representation of the object
         """

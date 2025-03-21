@@ -117,8 +117,36 @@ class TestTransportIntegration:
     @pytest.fixture
     def config(self):
         """Create a test configuration."""
-        # Load the default configuration
-        config = load_config()
+        try:
+            # Try to load the default configuration
+            config = load_config()
+        except ValueError:
+            # If validation fails, create a minimal valid configuration for testing
+            from kaltura_mcp.config import Config, ContextConfig, KalturaConfig, LoggingConfig, ServerConfig
+
+            config = Config(
+                kaltura=KalturaConfig(
+                    partner_id=12345,  # Test partner ID
+                    admin_secret="test-secret",
+                    user_id="test-user",
+                    service_url="https://www.kaltura.com/api_v3",
+                ),
+                server=ServerConfig(host="localhost", port=8000, transport="stdio"),
+                logging=LoggingConfig(level="INFO"),
+                context=ContextConfig(default_strategy="pagination", max_entries=100, max_context_size=10000),
+            )
+            # Create raw data structure for direct manipulation
+            config._raw_data = {
+                "kaltura": {
+                    "partner_id": 12345,
+                    "admin_secret": "test-secret",
+                    "user_id": "test-user",
+                    "service_url": "https://www.kaltura.com/api_v3",
+                },
+                "server": {"host": "localhost", "port": 8000, "transport": "stdio"},
+                "logging": {"level": "INFO"},
+                "context": {"default_strategy": "pagination", "max_entries": 100, "max_context_size": 10000},
+            }
 
         # Find an available port
         port = find_available_port(8000, 9000)
