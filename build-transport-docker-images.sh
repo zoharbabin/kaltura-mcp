@@ -92,42 +92,65 @@ fi
 # Set build options based on push flag
 if [ "$PUSH" = true ]; then
   BUILD_ARGS="--push"
+  USE_BUILDX=true
 elif [ "$LOCAL_BUILD" = true ]; then
-  BUILD_ARGS="--load"
+  # For local builds, we can't use --load with multi-arch images
+  # So we'll use regular docker build instead of buildx
+  USE_BUILDX=false
 else
   BUILD_ARGS="--output type=image,push=false"
+  USE_BUILDX=true
 fi
 
 # If a custom tag is provided, use it instead of the default tags
 if [ -n "$TAG" ]; then
   echo "Building image with custom tag: ${TAG}..."
-  docker buildx build \
-    --platform ${PLATFORMS} \
+  # For custom tags, use regular docker build (not buildx) to avoid multi-arch issues
+  # This is primarily for CI testing where we just need a working image for the current architecture
+  docker build \
     --tag ${TAG} \
-    ${BUILD_ARGS} \
     .
 else
   # Build the base image with default tags
   echo "Building the base image..."
-  docker buildx build \
-    --platform ${PLATFORMS} \
-    --tag ${REGISTRY}/${OWNER}/${REPO}:latest \
-    --tag ${REGISTRY}/${OWNER}/${REPO}:${VERSION} \
-    --tag ${REGISTRY}/${OWNER}/${REPO}:${COMMIT_SHA} \
-    ${BUILD_ARGS} \
-    .
+  if [ "$USE_BUILDX" = true ]; then
+    docker buildx build \
+      --platform ${PLATFORMS} \
+      --tag ${REGISTRY}/${OWNER}/${REPO}:latest \
+      --tag ${REGISTRY}/${OWNER}/${REPO}:${VERSION} \
+      --tag ${REGISTRY}/${OWNER}/${REPO}:${COMMIT_SHA} \
+      ${BUILD_ARGS} \
+      .
+  else
+    # For local builds without custom tag, use regular docker build
+    docker build \
+      --tag ${REGISTRY}/${OWNER}/${REPO}:latest \
+      --tag ${REGISTRY}/${OWNER}/${REPO}:${VERSION} \
+      --tag ${REGISTRY}/${OWNER}/${REPO}:${COMMIT_SHA} \
+      .
+  fi
 
   # Build transport-specific images
   for TRANSPORT in stdio http sse; do
     echo "Building the ${TRANSPORT} transport image..."
-    docker buildx build \
-      --platform ${PLATFORMS} \
-      --tag ${REGISTRY}/${OWNER}/${REPO}:${TRANSPORT} \
-      --tag ${REGISTRY}/${OWNER}/${REPO}:${VERSION}-${TRANSPORT} \
-      --tag ${REGISTRY}/${OWNER}/${REPO}:${COMMIT_SHA}-${TRANSPORT} \
-      --build-arg KALTURA_MCP_TRANSPORT=${TRANSPORT} \
-      ${BUILD_ARGS} \
-      .
+    if [ "$USE_BUILDX" = true ]; then
+      docker buildx build \
+        --platform ${PLATFORMS} \
+        --tag ${REGISTRY}/${OWNER}/${REPO}:${TRANSPORT} \
+        --tag ${REGISTRY}/${OWNER}/${REPO}:${VERSION}-${TRANSPORT} \
+        --tag ${REGISTRY}/${OWNER}/${REPO}:${COMMIT_SHA}-${TRANSPORT} \
+        --build-arg KALTURA_MCP_TRANSPORT=${TRANSPORT} \
+        ${BUILD_ARGS} \
+        .
+    else
+      # For local builds without custom tag, use regular docker build
+      docker build \
+        --tag ${REGISTRY}/${OWNER}/${REPO}:${TRANSPORT} \
+        --tag ${REGISTRY}/${OWNER}/${REPO}:${VERSION}-${TRANSPORT} \
+        --tag ${REGISTRY}/${OWNER}/${REPO}:${COMMIT_SHA}-${TRANSPORT} \
+        --build-arg KALTURA_MCP_TRANSPORT=${TRANSPORT} \
+        .
+    fi
   done
 fi
 
