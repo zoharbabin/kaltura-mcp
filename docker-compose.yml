@@ -1,11 +1,41 @@
 version: '3'
 
 services:
-  kaltura-mcp:
+  # Base service with shared configuration
+  kaltura-mcp-base: &kaltura-mcp-base
     build: .
-    ports:
-      - "8000:8000"
     volumes:
       - ./config.yaml:/app/config.yaml
     environment:
       - PYTHONUNBUFFERED=1
+
+  # STDIO transport service
+  kaltura-mcp-stdio:
+    <<: *kaltura-mcp-base
+    environment:
+      - PYTHONUNBUFFERED=1
+      - KALTURA_MCP_TRANSPORT=stdio
+    stdin_open: true
+    tty: true
+
+  # HTTP transport service
+  kaltura-mcp-http:
+    <<: *kaltura-mcp-base
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - KALTURA_MCP_TRANSPORT=http
+      - KALTURA_MCP_HOST=0.0.0.0
+      - KALTURA_MCP_PORT=8000
+
+  # SSE transport service
+  kaltura-mcp-sse:
+    <<: *kaltura-mcp-base
+    ports:
+      - "8001:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - KALTURA_MCP_TRANSPORT=sse
+      - KALTURA_MCP_HOST=0.0.0.0
+      - KALTURA_MCP_PORT=8000

@@ -1,3 +1,10 @@
+# Server Integration Implementation
+
+This document provides the detailed implementation for integrating the transport system with the Kaltura MCP server.
+
+## File: `kaltura_mcp/server.py` (Updated)
+
+```python
 #!/usr/bin/env python3
 """
 Kaltura MCP Server main module.
@@ -40,7 +47,7 @@ class KalturaMcpServer:
 
         # Register resource handlers
         self._register_resource_handlers()
-
+        
         # Initialize transport
         await self.transport.initialize()
 
@@ -187,3 +194,95 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+```
+
+## Key Changes
+
+The main changes to the server implementation are:
+
+1. **Import Transport Factory**: Import the `TransportFactory` class from the `kaltura_mcp.transport` module.
+
+2. **Create Transport Instance**: In the `__init__` method, create a transport instance using the `TransportFactory`.
+
+3. **Initialize Transport**: In the `initialize` method, call the transport's `initialize` method.
+
+4. **Use Transport**: In the `run` method, use the transport's `run` method instead of directly using the STDIO transport.
+
+## How the Integration Works
+
+The server integration works as follows:
+
+1. The server creates a transport instance based on the configuration
+2. The server initializes the transport during its own initialization
+3. The server registers its handlers with the MCP app
+4. The server runs the transport, passing the MCP app to it
+5. The transport handles the communication between clients and the MCP app
+
+This approach provides several benefits:
+- The server doesn't need to know the details of the transport mechanism
+- Different transports can be used without changing the server code
+- The server can focus on its core functionality
+
+## Configuration
+
+The server uses the configuration to determine which transport to use. The configuration is loaded from a file and/or environment variables, and passed to the `TransportFactory` to create the appropriate transport instance.
+
+Example configuration:
+
+```yaml
+server:
+  transport: "stdio"  # Options: stdio, http, sse
+  host: "0.0.0.0"     # Used for HTTP and SSE transports
+  port: 8000          # Used for HTTP and SSE transports
+  debug: false        # Enable debug mode
+```
+
+## Error Handling
+
+The server handles errors as follows:
+
+1. If an error occurs during transport initialization, it is logged and propagated
+2. If an error occurs during transport execution, it is logged and propagated
+3. The transport is responsible for handling communication-specific errors
+
+This approach ensures that errors are properly logged and handled at the appropriate level.
+
+## Lifecycle Management
+
+The server manages the lifecycle of the transport as follows:
+
+1. The server creates the transport instance during its own initialization
+2. The server initializes the transport during its own initialization
+3. The server runs the transport during its own run method
+4. The transport is responsible for its own shutdown
+
+This approach ensures that the transport is properly initialized and shut down along with the server.
+
+## Testing
+
+The server integration can be tested as follows:
+
+1. Unit tests to verify that the server creates and uses the transport correctly
+2. Integration tests to verify that the server works with different transports
+3. End-to-end tests to verify that clients can communicate with the server using different transports
+
+Example test:
+
+```python
+async def test_server_with_transport():
+    """Test server with a specific transport."""
+    # Create a mock transport
+    mock_transport = MockTransport()
+    
+    # Create a server with the mock transport
+    server = KalturaMcpServer(config)
+    server.transport = mock_transport
+    
+    # Initialize and run the server
+    await server.initialize()
+    await server.run()
+    
+    # Verify that the transport was used correctly
+    assert mock_transport.initialize_called
+    assert mock_transport.run_called
+    assert mock_transport.run_args[0] == server.app

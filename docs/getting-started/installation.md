@@ -17,8 +17,8 @@ The easiest way to install and configure the Kaltura-MCP Server is to use the pr
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-organization/kaltura-mcp.git
-cd kaltura-mcp
+git clone https://github.com/zoharbabin/kaltura-mcp.git
+cd kaltura-mcp-public
 
 # Run the setup script
 python setup_kaltura_mcp.py
@@ -67,8 +67,8 @@ This is the recommended method for development or if you need the latest feature
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-organization/kaltura-mcp.git
-cd kaltura-mcp
+git clone https://github.com/zoharbabin/kaltura-mcp.git
+cd kaltura-mcp-public
 
 # Create a virtual environment
 python -m venv venv
@@ -135,7 +135,7 @@ To verify that the installation was successful, you can run:
 pip list | grep kaltura-mcp
 
 # Try importing the package
-python -c "import kaltura_mcp; print(kaltura_mcp.__version__)"
+python -c "import kaltura_mcp; print('Kaltura MCP Server installed successfully')"
 
 # Using the setup script
 python setup_kaltura_mcp.py --skip-venv --skip-tests

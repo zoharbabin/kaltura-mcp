@@ -14,8 +14,11 @@ COPY . .
 # Run setup script in non-interactive mode
 RUN python setup_kaltura_mcp.py --non-interactive --skip-venv --dev-deps
 
-# Expose port
+# Expose ports for HTTP and SSE transports
 EXPOSE 8000
 
-# Run server
-CMD ["kaltura-mcp"]
+# Set default transport to stdio
+ENV KALTURA_MCP_TRANSPORT=stdio
+
+# Run server with configurable transport
+CMD ["sh", "-c", "kaltura-mcp"]

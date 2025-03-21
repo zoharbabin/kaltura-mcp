@@ -65,7 +65,12 @@ def main():
 
     parser = argparse.ArgumentParser(description="Run tests and quality checks for the Kaltura MCP project")
     parser.add_argument("--integration", action="store_true", help="Run integration tests")
-    parser.add_argument("--all", action="store_true", help="Run all tests")
+    parser.add_argument(
+        "--all",
+        action="store_true",
+        help="Run ALL tests including unit and integration tests (excluding advanced transport tests)",
+    )
+    parser.add_argument("--advanced", action="store_true", help="Run advanced transport integration tests (may be unstable)")
     parser.add_argument("--full-flow", action="store_true", help="Run full MCP flow tests")
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
     parser.add_argument("--log-api-calls", action="store_true", help="Log Kaltura API calls")
@@ -139,8 +144,20 @@ def main():
     if args.full_flow:
         # Run only the full flow tests
         pytest_cmd.extend(["tests/integration/test_full_mcp_flow.py"])
-    elif not args.integration and not args.all:
+    elif args.advanced:
+        # Run advanced transport tests specifically
+        logger.info("Running advanced transport integration tests (may be unstable)")
+        pytest_cmd.extend(["tests/integration/test_advanced_transport_integration.py"])
+    elif args.all:
+        # Run all tests including integration tests, but exclude advanced transport tests
+        logger.info("Running ALL tests including integration tests (excluding advanced transport tests)")
+        pytest_cmd.extend(["--ignore=tests/integration/test_advanced_transport_integration.py"])
+    elif args.integration:
+        # Run unit tests and integration tests
+        logger.info("Running unit tests and integration tests")
+    else:
         # Skip integration tests by default
+        logger.info("Running unit tests only (use --integration or --all for more tests)")
         pytest_cmd.extend(["--ignore=tests/integration"])
 
     # Run tests

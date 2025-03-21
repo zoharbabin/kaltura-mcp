@@ -1,0 +1,133 @@
+name: Transport Tests
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'kaltura_mcp/transport/**'
+      - 'tests/**/test_transport*.py'
+      - '.github/workflows/transport-tests.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'kaltura_mcp/transport/**'
+      - 'tests/**/test_transport*.py'
+      - '.github/workflows/transport-tests.yml'
+  workflow_dispatch:
+
+jobs:
+  test-transports:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+        transport: ['stdio', 'http', 'sse']
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev]"
+    
+    - name: Lint with ruff
+      run: |
+        ruff check kaltura_mcp/transport/
+    
+    - name: Type check with mypy
+      run: |
+        mypy kaltura_mcp/transport/
+    
+    - name: Run unit tests for ${{ matrix.transport }} transport
+      run: |
+        python -m pytest tests/unit/test_transports.py::Test${{ matrix.transport == 'stdio' && 'Stdio' || matrix.transport == 'http' && 'Http' || 'Sse' }}Transport -v
+        python -m pytest tests/unit/test_transport_factory.py::test_create_${{ matrix.transport }}_transport -v
+    
+    - name: Run integration tests for ${{ matrix.transport }} transport
+      run: |
+        export KALTURA_MCP_TRANSPORT=${{ matrix.transport }}
+        python -m pytest tests/integration/test_transport_integration.py::TestTransportIntegration::test_${{ matrix.transport }}_transport -v
+        python -m pytest tests/integration/test_advanced_transport_integration.py::TestAdvancedTransportIntegration::test_${{ matrix.transport }}_transport_* -v
+    
+    - name: Run end-to-end tests for ${{ matrix.transport }} transport
+      run: |
+        export KALTURA_MCP_TRANSPORT=${{ matrix.transport }}
+        python -m pytest tests/integration/test_transport_end_to_end.py::TestTransportEndToEnd::test_transport_switching -v
+        python -m pytest tests/integration/test_transport_end_to_end.py::TestTransportEndToEnd::test_error_handling -v
+        if [ "${{ matrix.transport }}" = "http" ]; then
+          python -m pytest tests/integration/test_transport_end_to_end.py::TestTransportEndToEnd::test_concurrent_clients -v
+          python -m pytest tests/integration/test_transport_end_to_end.py::TestTransportEndToEnd::test_performance -v
+        fi
+
+  test-docker:
+    runs-on: ubuntu-latest
+    needs: test-transports
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+    
+    - name: Build Docker image
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        push: false
+        tags: kaltura-mcp:test
+        load: true
+    
+    - name: Test STDIO transport in Docker
+      run: |
+        docker run --rm kaltura-mcp:test sh -c "KALTURA_MCP_TRANSPORT=stdio python -m pytest tests/unit/test_transports.py::TestStdioTransport -v"
+    
+    - name: Test HTTP transport in Docker
+      run: |
+        docker run --rm kaltura-mcp:test sh -c "KALTURA_MCP_TRANSPORT=http python -m pytest tests/unit/test_transports.py::TestHttpTransport -v"
+    
+    - name: Test SSE transport in Docker
+      run: |
+        docker run --rm kaltura-mcp:test sh -c "KALTURA_MCP_TRANSPORT=sse python -m pytest tests/unit/test_transports.py::TestSseTransport -v"
+    
+    - name: Test transport factory in Docker
+      run: |
+        docker run --rm kaltura-mcp:test sh -c "python -m pytest tests/unit/test_transport_factory.py -v"
+
+  build-multiarch:
+    runs-on: ubuntu-latest
+    needs: test-docker
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v2
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+    
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Set up environment
+      run: |
+        echo "CR_PAT=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
+        echo "VERSION=$(grep -m 1 'version' pyproject.toml | cut -d'\"' -f2)" >> $GITHUB_ENV
+        echo "COMMIT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+    
+    - name: Build and push all transport images
+      run: |
+        chmod +x ./build-transport-docker-images.sh
+        ./build-transport-docker-images.sh --push --owner ${{ github.repository_owner }} --platforms "linux/amd64,linux/arm64"

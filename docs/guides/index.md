@@ -14,6 +14,7 @@ This section provides guides for using the Kaltura-MCP Server effectively.
 - [Claude Integration Architecture](claude-integration-architecture.md): Architectural overview of Claude integration
 - [Claude Integration Quick Reference](claude-integration-quick-reference.md): Quick reference for Claude integration
 - [Claude Integration Best Practices](claude-integration-best-practices.md): Best practices for Claude integration
+- [Transport Architecture](transport-architecture.md): Guide to the transport architecture of the Kaltura MCP server
 
 ## Overview
 
@@ -83,6 +84,21 @@ The [Authentication](authentication.md) guide provides detailed information on h
 - Configuring authentication settings
 - Handling session expiration
 - Using different authentication methods
+
+## Transport Architecture
+
+The [Transport Architecture](transport-architecture.md) guide provides detailed information on the transport architecture of the Kaltura MCP server:
+
+- Understanding the different transport mechanisms (STDIO, HTTP, SSE)
+- Configuring the server to use different transport mechanisms
+- Creating clients for different transport mechanisms
+
+The [Extending Transport Architecture](extending-transport-architecture.md) guide provides a comprehensive walkthrough for extending the transport architecture with new transport mechanisms:
+
+- Creating a new transport implementation
+- Updating the transport factory
+- Creating client examples
+- Testing and deploying the new transport
 
 ## Claude Integration
 

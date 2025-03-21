@@ -24,8 +24,8 @@ docker pull ghcr.io/zoharbabin/kaltura-mcp:latest
 cp config.yaml.example config.yaml
 # Edit config.yaml with your Kaltura API credentials
 
-# Run the container
-docker run -p 8000:8000 -v $(pwd)/config.yaml:/app/config.yaml ghcr.io/zoharbabin/kaltura-mcp:latest
+# Run the container with HTTP transport
+docker run -p 8000:8000 -v $(pwd)/config.yaml:/app/config.yaml -e KALTURA_MCP_TRANSPORT=http ghcr.io/zoharbabin/kaltura-mcp:latest
 ```
 
 ### Using Docker Compose
@@ -41,8 +41,52 @@ cd kaltura-mcp
 cp config.yaml.example config.yaml
 # Edit config.yaml with your Kaltura API credentials
 
-# Build and run the Docker container
-docker-compose up
+# Build and run the Docker container with HTTP transport
+docker-compose up kaltura-mcp-http
+```
+
+## Transport Mechanisms
+
+The Kaltura MCP server supports three transport mechanisms:
+
+1. **STDIO Transport**: For direct process-to-process communication
+2. **HTTP Transport**: For web-based communication
+3. **SSE Transport**: For Server-Sent Events based communication
+
+### Using STDIO Transport
+
+The STDIO transport is useful for direct process-to-process communication:
+
+```bash
+# Using Docker run
+docker run -i -v $(pwd)/config.yaml:/app/config.yaml -e KALTURA_MCP_TRANSPORT=stdio ghcr.io/zoharbabin/kaltura-mcp:latest
+
+# Using Docker Compose
+docker-compose up kaltura-mcp-stdio
+```
+
+### Using HTTP Transport
+
+The HTTP transport is useful for web-based communication:
+
+```bash
+# Using Docker run
+docker run -p 8000:8000 -v $(pwd)/config.yaml:/app/config.yaml -e KALTURA_MCP_TRANSPORT=http ghcr.io/zoharbabin/kaltura-mcp:latest
+
+# Using Docker Compose
+docker-compose up kaltura-mcp-http
+```
+
+### Using SSE Transport
+
+The SSE transport is useful for Server-Sent Events based communication:
+
+```bash
+# Using Docker run
+docker run -p 8000:8000 -v $(pwd)/config.yaml:/app/config.yaml -e KALTURA_MCP_TRANSPORT=sse ghcr.io/zoharbabin/kaltura-mcp:latest
+
+# Using Docker Compose
+docker-compose up kaltura-mcp-sse
 ```
 
 ## Docker Configuration
@@ -68,36 +112,70 @@ COPY . .
 # Run setup script in non-interactive mode
 RUN python setup_kaltura_mcp.py --non-interactive --skip-venv --dev-deps
 
-# Expose port
+# Expose ports for HTTP and SSE transports
 EXPOSE 8000
 
-# Run server
-CMD ["kaltura-mcp"]
+# Set default transport to stdio
+ENV KALTURA_MCP_TRANSPORT=stdio
+
+# Run server with configurable transport
+CMD ["sh", "-c", "kaltura-mcp"]
 ```
 
 ### Docker Compose
 
-The `docker-compose.yml` file provides a convenient way to run the Docker container:
+The `docker-compose.yml` file provides a convenient way to run the Docker container with different transport mechanisms:
 
 ```yaml
 version: '3'
 
 services:
-  kaltura-mcp:
+  # Base service with shared configuration
+  kaltura-mcp-base: &kaltura-mcp-base
     build: .
-    ports:
-      - "8000:8000"
     volumes:
       - ./config.yaml:/app/config.yaml
     environment:
       - PYTHONUNBUFFERED=1
+
+  # STDIO transport service
+  kaltura-mcp-stdio:
+    <<: *kaltura-mcp-base
+    environment:
+      - PYTHONUNBUFFERED=1
+      - KALTURA_MCP_TRANSPORT=stdio
+    stdin_open: true
+    tty: true
+
+  # HTTP transport service
+  kaltura-mcp-http:
+    <<: *kaltura-mcp-base
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - KALTURA_MCP_TRANSPORT=http
+      - KALTURA_MCP_HOST=0.0.0.0
+      - KALTURA_MCP_PORT=8000
+
+  # SSE transport service
+  kaltura-mcp-sse:
+    <<: *kaltura-mcp-base
+    ports:
+      - "8001:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - KALTURA_MCP_TRANSPORT=sse
+      - KALTURA_MCP_HOST=0.0.0.0
+      - KALTURA_MCP_PORT=8000
 ```
 
 This configuration:
-- Builds the Docker image from the current directory
-- Maps port 8000 from the container to port 8000 on the host
-- Mounts the `config.yaml` file from the host into the container
-- Sets the `PYTHONUNBUFFERED` environment variable to ensure Python output is not buffered
+- Defines a base service with shared configuration
+- Creates separate services for each transport mechanism
+- Maps appropriate ports for HTTP and SSE transports
+- Sets environment variables for each transport mechanism
+- Enables stdin and tty for the STDIO transport
 
 ## Building the Docker Image Manually
 
@@ -107,9 +185,34 @@ If you prefer to build and run the Docker image manually:
 # Build the Docker image
 docker build -t kaltura-mcp .
 
-# Run the Docker container
-docker run -p 8000:8000 -v $(pwd)/config.yaml:/app/config.yaml kaltura-mcp
+# Run the Docker container with HTTP transport
+docker run -p 8000:8000 -v $(pwd)/config.yaml:/app/config.yaml -e KALTURA_MCP_TRANSPORT=http kaltura-mcp
 ```
+
+### Building Multi-Architecture Docker Images
+
+The project includes a script to build multi-architecture Docker images for all transport types:
+
+```bash
+# Build images locally (no push)
+./build-transport-docker-images.sh
+
+# Build and push images to a registry
+./build-transport-docker-images.sh --push --registry your-registry --owner your-username
+
+# For GitHub Container Registry, authenticate first
+export CR_PAT=YOUR_GITHUB_TOKEN
+echo $CR_PAT | docker login ghcr.io -u USERNAME --password-stdin
+./build-transport-docker-images.sh --push
+```
+
+The script supports the following options:
+
+- `--push`: Push images to the registry
+- `--registry`: Specify the registry (default: ghcr.io)
+- `--owner`: Specify the owner/organization (default: zoharbabin)
+- `--repo`: Specify the repository name (default: kaltura-mcp)
+- `--platforms`: Specify the platforms to build for (default: linux/amd64,linux/arm64)
 
 ## Configuration
 
@@ -121,7 +224,8 @@ For Docker, it's important to set the host to `0.0.0.0` in your configuration fi
 
 ```yaml
 server:
-  host: "0.0.0.0"  # Important: Use 0.0.0.0 to allow external connections
+  transport: "http"  # Transport type (stdio, http, sse)
+  host: "0.0.0.0"    # Important: Use 0.0.0.0 to allow external connections
   port: 8000
 ```
 
@@ -136,8 +240,9 @@ docker run -p 8000:8000 \
   -e KALTURA_ADMIN_SECRET=your-admin-secret \
   -e KALTURA_USER_ID=your-user-id \
   -e KALTURA_SERVICE_URL=https://www.kaltura.com/api_v3 \
-  -e SERVER_HOST=0.0.0.0 \
-  -e SERVER_PORT=8000 \
+  -e KALTURA_MCP_TRANSPORT=http \
+  -e KALTURA_MCP_HOST=0.0.0.0 \
+  -e KALTURA_MCP_PORT=8000 \
   ghcr.io/zoharbabin/kaltura-mcp:latest
 ```
 
@@ -149,9 +254,10 @@ Available environment variables:
 | `KALTURA_ADMIN_SECRET` | Your Kaltura admin secret | None (required) |
 | `KALTURA_USER_ID` | Your Kaltura user ID | None (required) |
 | `KALTURA_SERVICE_URL` | Kaltura API endpoint | `https://www.kaltura.com/api_v3` |
-| `SERVER_HOST` | Server host | `0.0.0.0` |
-| `SERVER_PORT` | Server port | `8000` |
-| `SERVER_DEBUG` | Enable debug mode | `false` |
+| `KALTURA_MCP_TRANSPORT` | Transport type | `stdio` |
+| `KALTURA_MCP_HOST` | Server host | `0.0.0.0` |
+| `KALTURA_MCP_PORT` | Server port | `8000` |
+| `KALTURA_MCP_DEBUG` | Enable debug mode | `false` |
 | `LOGGING_LEVEL` | Logging level | `INFO` |
 | `CONTEXT_DEFAULT_STRATEGY` | Default context management strategy | `pagination` |
 | `CONTEXT_MAX_ENTRIES` | Maximum number of entries | `100` |
@@ -167,6 +273,9 @@ docker run --rm kaltura-mcp python run_tests.py
 
 # Run specific tests
 docker run --rm kaltura-mcp python run_tests.py --lint --type-check
+
+# Run transport-specific tests
+docker run --rm kaltura-mcp python run_tests.py -k "test_transport"
 ```
 
 ## Troubleshooting
@@ -184,7 +293,7 @@ chmod 644 config.yaml
 If port 8000 is already in use on your host, you can map a different port:
 
 ```bash
-docker run -p 8001:8000 -v $(pwd)/config.yaml:/app/config.yaml kaltura-mcp
+docker run -p 8001:8000 -v $(pwd)/config.yaml:/app/config.yaml -e KALTURA_MCP_TRANSPORT=http kaltura-mcp
 ```
 
 Or update the `docker-compose.yml` file:
@@ -205,8 +314,33 @@ docker logs $(docker ps -q -f name=kaltura-mcp)
 Or with Docker Compose:
 
 ```bash
-docker-compose logs
+docker-compose logs kaltura-mcp-http
 ```
+
+### Transport-Specific Issues
+
+#### STDIO Transport
+
+If you're having issues with the STDIO transport:
+
+- Ensure you're running the container with the `-i` flag to enable interactive mode
+- Check that your client is correctly connected to the container's stdin/stdout
+
+#### HTTP Transport
+
+If you're having issues with the HTTP transport:
+
+- Ensure the port is correctly mapped (`-p 8000:8000`)
+- Check that the host is set to `0.0.0.0` to allow external connections
+- Verify that no other service is using the same port
+
+#### SSE Transport
+
+If you're having issues with the SSE transport:
+
+- Ensure the port is correctly mapped (`-p 8000:8000`)
+- Check that the host is set to `0.0.0.0` to allow external connections
+- Verify that your client supports Server-Sent Events
 
 ## Multi-architecture Docker Images
 
@@ -242,8 +376,9 @@ The Docker images use the following tagging scheme:
 1. **Use the pre-built images**: Use the pre-built multi-architecture images from GitHub Container Registry when possible
 2. **Mount configuration files**: Mount configuration files from the host to avoid rebuilding the image
 3. **Use environment variables**: Use environment variables for sensitive information
-4. **Test the Docker image**: Always test the Docker image before deploying
-5. **Keep the Docker image small**: The Dockerfile is optimized to create a small image
+4. **Choose the right transport**: Select the appropriate transport mechanism for your use case
+5. **Test the Docker image**: Always test the Docker image before deploying
+6. **Keep the Docker image small**: The Dockerfile is optimized to create a small image
 
 ## Interacting with the Server
 
@@ -257,7 +392,7 @@ The MCP CLI is a command-line tool for interacting with MCP servers:
 # Install the MCP CLI
 pip install mcp-cli
 
-# Connect to the MCP server
+# Connect to the MCP server (HTTP transport)
 mcp-cli connect http://localhost:8000
 
 # List available tools
@@ -275,19 +410,14 @@ mcp-cli resources read media://0_abc123
 You can use the example Python clients provided in the `examples/` directory:
 
 ```bash
-# Simple client example
-python examples/simple_client.py
-
-# Complete test example
-python examples/complete_test.py
-
-# Working MCP client example
-python examples/working_mcp_client.py
+# Transport client examples
+python examples/transport_client_examples.py http localhost 8000
+python examples/transport_client_examples.py sse localhost 8001
 ```
 
 ### Using HTTP Requests
 
-You can interact with the server using HTTP requests:
+You can interact with the server using HTTP requests (for HTTP and SSE transports):
 
 ```bash
 # Get server information

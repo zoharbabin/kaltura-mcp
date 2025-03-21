@@ -34,11 +34,11 @@ kaltura:
 
 # Server configuration
 server:
-  host: "127.0.0.1"  # Server host
-  port: 8000  # Server port
+  transport: "stdio"  # Transport method (stdio, http, sse)
+  host: "127.0.0.1"  # Server host (used for HTTP and SSE transports)
+  port: 8000  # Server port (used for HTTP and SSE transports)
   debug: false  # Enable debug mode
   log_level: "INFO"  # Logging level
-  transport: "stdio"  # Transport method (stdio, websocket)
 
 # Logging configuration
 logging:
@@ -67,10 +67,10 @@ context:
 
 | Option | Description | Default | Required |
 |--------|-------------|---------|----------|
+| `transport` | Transport method (stdio, http, sse) | "stdio" | No |
+| `host` | Host for HTTP and SSE transports | "127.0.0.1" | No |
+| `port` | Port for HTTP and SSE transports | 8000 | No |
 | `log_level` | Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL) | "INFO" | No |
-| `transport` | Transport method (stdio, websocket) | "stdio" | No |
-| `port` | Port for the websocket transport | 8000 | No |
-| `host` | Host for the websocket transport | "127.0.0.1" | No |
 | `debug` | Enable debug mode | false | No |
 
 #### Logging Section
@@ -102,7 +102,7 @@ You can also configure the Kaltura-MCP Server using environment variables. Envir
 | `KALTURA_USER_ID` | kaltura.user_id | `export KALTURA_USER_ID=your-user-id` |
 | `KALTURA_SERVICE_URL` | kaltura.service_url | `export KALTURA_SERVICE_URL=https://www.kaltura.com/api_v3` |
 | `KALTURA_MCP_LOG_LEVEL` | server.log_level | `export KALTURA_MCP_LOG_LEVEL=INFO` |
-| `KALTURA_MCP_TRANSPORT` | server.transport | `export KALTURA_MCP_TRANSPORT=stdio` |
+| `KALTURA_MCP_TRANSPORT` | server.transport | `export KALTURA_MCP_TRANSPORT=stdio` (options: stdio, http, sse) |
 | `KALTURA_MCP_PORT` | server.port | `export KALTURA_MCP_PORT=8000` |
 | `KALTURA_MCP_HOST` | server.host | `export KALTURA_MCP_HOST=127.0.0.1` |
 | `KALTURA_MCP_DEBUG` | server.debug | `export KALTURA_MCP_DEBUG=true` |
