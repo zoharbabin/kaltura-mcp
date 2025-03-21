@@ -54,7 +54,10 @@ jobs:
       run: |
         export KALTURA_MCP_TRANSPORT=${{ matrix.transport }}
         python -m pytest tests/integration/test_transport_integration.py::TestTransportIntegration::test_${{ matrix.transport }}_transport -v
-        python -m pytest tests/integration/test_advanced_transport_integration.py::TestAdvancedTransportIntegration::test_${{ matrix.transport }}_transport_* -v
+        python -m pytest tests/integration/test_advanced_transport_integration.py::TestAdvancedTransportIntegration::test_${{ matrix.transport }}_transport_error_handling -v
+        if [ "${{ matrix.transport }}" = "http" ]; then
+          python -m pytest tests/integration/test_advanced_transport_integration.py::TestAdvancedTransportIntegration::test_${{ matrix.transport }}_transport_concurrent_requests -v
+        fi
     
     - name: Run end-to-end tests for ${{ matrix.transport }} transport
       run: |
