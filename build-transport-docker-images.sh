@@ -11,6 +11,7 @@ REPO="kaltura-mcp"
 PLATFORMS="linux/amd64,linux/arm64"
 VERSION=$(grep -m 1 'version' pyproject.toml | cut -d'"' -f2)
 COMMIT_SHA=$(git rev-parse --short HEAD)
+TAG=""
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -41,9 +42,14 @@ while [[ $# -gt 0 ]]; do
             shift
             shift
             ;;
+        --tag)
+            TAG="$2"
+            shift
+            shift
+            ;;
         *)
             echo "Unknown option: $1"
-            echo "Usage: $0 [--push] [--registry REGISTRY] [--owner OWNER] [--repo REPO] [--platforms PLATFORMS]"
+            echo "Usage: $0 [--push] [--registry REGISTRY] [--owner OWNER] [--repo REPO] [--platforms PLATFORMS] [--tag TAG]"
             exit 1
             ;;
     esac
@@ -92,44 +98,59 @@ else
   BUILD_ARGS="--output type=image,push=false"
 fi
 
-# Build the base image
-echo "Building the base image..."
-docker buildx build \
-  --platform ${PLATFORMS} \
-  --tag ${REGISTRY}/${OWNER}/${REPO}:latest \
-  --tag ${REGISTRY}/${OWNER}/${REPO}:${VERSION} \
-  --tag ${REGISTRY}/${OWNER}/${REPO}:${COMMIT_SHA} \
-  ${BUILD_ARGS} \
-  .
-
-# Build transport-specific images
-for TRANSPORT in stdio http sse; do
-  echo "Building the ${TRANSPORT} transport image..."
+# If a custom tag is provided, use it instead of the default tags
+if [ -n "$TAG" ]; then
+  echo "Building image with custom tag: ${TAG}..."
   docker buildx build \
     --platform ${PLATFORMS} \
-    --tag ${REGISTRY}/${OWNER}/${REPO}:${TRANSPORT} \
-    --tag ${REGISTRY}/${OWNER}/${REPO}:${VERSION}-${TRANSPORT} \
-    --tag ${REGISTRY}/${OWNER}/${REPO}:${COMMIT_SHA}-${TRANSPORT} \
-    --build-arg KALTURA_MCP_TRANSPORT=${TRANSPORT} \
+    --tag ${TAG} \
     ${BUILD_ARGS} \
     .
-done
+else
+  # Build the base image with default tags
+  echo "Building the base image..."
+  docker buildx build \
+    --platform ${PLATFORMS} \
+    --tag ${REGISTRY}/${OWNER}/${REPO}:latest \
+    --tag ${REGISTRY}/${OWNER}/${REPO}:${VERSION} \
+    --tag ${REGISTRY}/${OWNER}/${REPO}:${COMMIT_SHA} \
+    ${BUILD_ARGS} \
+    .
+
+  # Build transport-specific images
+  for TRANSPORT in stdio http sse; do
+    echo "Building the ${TRANSPORT} transport image..."
+    docker buildx build \
+      --platform ${PLATFORMS} \
+      --tag ${REGISTRY}/${OWNER}/${REPO}:${TRANSPORT} \
+      --tag ${REGISTRY}/${OWNER}/${REPO}:${VERSION}-${TRANSPORT} \
+      --tag ${REGISTRY}/${OWNER}/${REPO}:${COMMIT_SHA}-${TRANSPORT} \
+      --build-arg KALTURA_MCP_TRANSPORT=${TRANSPORT} \
+      ${BUILD_ARGS} \
+      .
+  done
+fi
 
 echo "All images built successfully!"
 if [ "$PUSH" = true ]; then
   echo "Images pushed to registry."
 fi
 
-echo "Available images:"
-echo "- ${REGISTRY}/${OWNER}/${REPO}:latest (default)"
-echo "- ${REGISTRY}/${OWNER}/${REPO}:${VERSION}"
-echo "- ${REGISTRY}/${OWNER}/${REPO}:${COMMIT_SHA}"
-echo "- ${REGISTRY}/${OWNER}/${REPO}:stdio (STDIO transport)"
-echo "- ${REGISTRY}/${OWNER}/${REPO}:${VERSION}-stdio"
-echo "- ${REGISTRY}/${OWNER}/${REPO}:${COMMIT_SHA}-stdio"
-echo "- ${REGISTRY}/${OWNER}/${REPO}:http (HTTP transport)"
-echo "- ${REGISTRY}/${OWNER}/${REPO}:${VERSION}-http"
-echo "- ${REGISTRY}/${OWNER}/${REPO}:${COMMIT_SHA}-http"
-echo "- ${REGISTRY}/${OWNER}/${REPO}:sse (SSE transport)"
-echo "- ${REGISTRY}/${OWNER}/${REPO}:${VERSION}-sse"
-echo "- ${REGISTRY}/${OWNER}/${REPO}:${COMMIT_SHA}-sse"
+if [ -n "$TAG" ]; then
+  echo "Built image with custom tag:"
+  echo "- ${TAG}"
+else
+  echo "Available images:"
+  echo "- ${REGISTRY}/${OWNER}/${REPO}:latest (default)"
+  echo "- ${REGISTRY}/${OWNER}/${REPO}:${VERSION}"
+  echo "- ${REGISTRY}/${OWNER}/${REPO}:${COMMIT_SHA}"
+  echo "- ${REGISTRY}/${OWNER}/${REPO}:stdio (STDIO transport)"
+  echo "- ${REGISTRY}/${OWNER}/${REPO}:${VERSION}-stdio"
+  echo "- ${REGISTRY}/${OWNER}/${REPO}:${COMMIT_SHA}-stdio"
+  echo "- ${REGISTRY}/${OWNER}/${REPO}:http (HTTP transport)"
+  echo "- ${REGISTRY}/${OWNER}/${REPO}:${VERSION}-http"
+  echo "- ${REGISTRY}/${OWNER}/${REPO}:${COMMIT_SHA}-http"
+  echo "- ${REGISTRY}/${OWNER}/${REPO}:sse (SSE transport)"
+  echo "- ${REGISTRY}/${OWNER}/${REPO}:${VERSION}-sse"
+  echo "- ${REGISTRY}/${OWNER}/${REPO}:${COMMIT_SHA}-sse"
+fi

@@ -78,16 +78,10 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
-    
     - name: Build Docker image
-      uses: docker/build-push-action@v4
-      with:
-        context: .
-        push: false
-        tags: kaltura-mcp:test
-        load: true
+      run: |
+        chmod +x ./build-transport-docker-images.sh
+        ./build-transport-docker-images.sh --tag kaltura-mcp:test
     
     - name: Test STDIO transport in Docker
       run: |

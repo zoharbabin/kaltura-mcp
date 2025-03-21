@@ -42,7 +42,9 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build Docker image
-      run: docker build -t kaltura-mcp .
+      run: |
+        chmod +x ./build-transport-docker-images.sh
+        ./build-transport-docker-images.sh --tag kaltura-mcp:latest
     - name: Test Docker image
       run: |
-        docker run --rm kaltura-mcp python -c "import kaltura_mcp; print(f'Kaltura MCP version: {kaltura_mcp.__version__}')"
+        docker run --rm kaltura-mcp:latest python -c "import kaltura_mcp; print(f'Kaltura MCP version: {kaltura_mcp.__version__}')"
