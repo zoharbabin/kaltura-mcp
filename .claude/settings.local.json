@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(pip install:*)",
+      "Bash(./venv/bin/pip install lxml)",
+      "Bash(./venv/bin/python:*)",
+      "Bash(test:*)",
+      "Bash(cp:*)",
+      "Bash(pkill:*)",
+      "Bash(true)",
+      "Bash(chmod:*)",
+      "Bash(./venv/bin/pip install mcp-cli)",
+      "Bash(find:*)",
+      "Bash(ls:*)",
+      "Bash(/opt/homebrew/var/www/kalmcp/run_server.sh:*)",
+      "Bash(./venv/bin/pip show mcp)",
+      "Bash(./venv/bin/pip install --upgrade mcp)",
+      "Bash(grep:*)",
+      "Bash(python:*)",
+      "Bash(rm:*)",
+      "Bash(rg:*)"
+    ],
+    "deny": []
+  }
+}
