@@ -4,10 +4,26 @@
 import os
 import sys
 import asyncio
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 import mcp.types as types
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
+
+# Load .env file from the MCP server directory
+try:
+    from dotenv import load_dotenv
+    server_dir = Path(__file__).parent.parent.parent
+    env_file = server_dir / '.env'
+    if env_file.exists():
+        load_dotenv(env_file)
+        print(f"Loaded environment from: {env_file}", file=sys.stderr)
+    else:
+        # Try loading from current working directory as fallback
+        load_dotenv()
+except ImportError:
+    # dotenv not available, rely on system environment variables
+    pass
 
 from .kaltura_client import KalturaClientManager
 from .tools import (

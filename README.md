@@ -44,7 +44,41 @@ This server supports two deployment modes:
 pip install kaltura-mcp
 ```
 
-### Step 2: Get Your Kaltura Credentials
+### Step 2: Setup Environment Configuration
+
+**🔒 Secure Method (Recommended)**: Use the interactive setup script:
+
+```bash
+# Navigate to your project directory
+cd /path/to/kaltura-mcp
+
+# Run the interactive setup
+python setup_env.py
+```
+
+The script will guide you through:
+1. Choosing between stdio (local) or remote mode
+2. Securely entering your Kaltura credentials
+3. Generating a `.env` file with proper permissions (600)
+4. Providing the exact Claude Desktop configuration
+
+**📋 Manual Method**: Copy and edit the example file:
+
+```bash
+# For stdio (local) mode
+cp .env.stdio.example .env
+
+# For remote (hosted) mode  
+cp .env.remote.example .env
+
+# Edit with your credentials
+nano .env
+
+# Set secure permissions
+chmod 600 .env
+```
+
+### Step 3: Get Your Kaltura Credentials
 
 You'll need these credentials from your Kaltura account:
 
@@ -60,25 +94,22 @@ Open your Claude Desktop configuration file:
 **macOS**: `~/Library/Application\ Support/Claude/claude_desktop_config.json`
 **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 
-Add your Kaltura credentials directly to the configuration:
+**🔒 Secure Configuration (credentials in .env file)**:
 
 ```json
 {
   "mcpServers": {
     "kaltura": {
-      "command": "kaltura-mcp",
-      "env": {
-        "KALTURA_SERVICE_URL": "https://www.kaltura.com",
-        "KALTURA_PARTNER_ID": "1234567",
-        "KALTURA_ADMIN_SECRET": "your-actual-admin-secret-here",
-        "KALTURA_USER_ID": "your-email@domain.com"
-      }
+      "command": "/full/path/to/kaltura-mcp"
     }
   }
 }
 ```
 
-**Important**: Replace the example values with your actual Kaltura credentials. Claude Desktop cannot access system environment variables, so credentials must be explicitly provided in this configuration file.
+**Important Notes**: 
+- Replace `/full/path/to/kaltura-mcp` with the actual path to your kaltura-mcp command (find it with `which kaltura-mcp`)
+- The `.env` file is automatically loaded from the project directory by the server
+- The `setup_env.py` script will automatically detect and provide the correct command path
 
 ### Step 5: Restart Claude Desktop
 
@@ -97,21 +128,36 @@ In Claude Desktop, try asking:
 - **Solution**: Make sure you installed with `pip install kaltura-mcp` and the command is in your PATH
 
 **Issue**: "Error: Missing required environment variables"
-- **Solution**: Check that all credentials are correctly set in the Claude Desktop config
+- **Solution**: 
+  1. Check that `.env` file exists in your project directory
+  2. Verify file permissions: `ls -la .env` (should show `-rw-------`)
+  3. Ensure all required Kaltura credentials are set in `.env` file
 
 **Issue**: "Invalid credentials" or "Authentication failed"
-- **Solution**: Verify your credentials in Kaltura KMC → Settings → Integration Settings
+- **Solution**: 
+  1. Verify your credentials in Kaltura KMC → Settings → Integration Settings
+  2. Check `.env` file for typos or extra spaces
+  3. Run `python setup_env.py` to recreate the configuration
 
 **Issue**: Claude Desktop doesn't show the MCP server
 - **Solution**: 
   1. Check the config file syntax with a JSON validator
-  2. Restart Claude Desktop completely
-  3. Check Claude Desktop logs for error messages
+  2. Verify the command path is correct (use `which kaltura-mcp`)
+  3. Restart Claude Desktop completely
+  4. Check Claude Desktop logs for error messages
 
-**✅ Security Note:** 
-- Credentials are stored directly in Claude Desktop's configuration file
-- The MCP server process receives credentials securely via environment variables
-- Claude Desktop cannot access system environment variables, so explicit configuration is required
+**Issue**: ".env file not found" error
+- **Solution**:
+  1. Run `python setup_env.py` from your project directory
+  2. Ensure the `.env` file exists in the same directory as the server code
+  3. Check file permissions: `ls -la .env` (should show `-rw-------`)
+
+**✅ Security Benefits:** 
+- ✅ **Secure file permissions** (600 - owner only)
+- ✅ **Git-ignored by default** (won't be committed)
+- ✅ **Local to project directory** (easy to manage)
+- ✅ **Standard .env pattern** (familiar to developers)
+- ✅ **No credentials in config files** (improved security)
 
 ---
 
