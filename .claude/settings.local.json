@@ -19,7 +19,8 @@
       "Bash(grep:*)",
       "Bash(python:*)",
       "Bash(rm:*)",
-      "Bash(rg:*)"
+      "Bash(rg:*)",
+      "WebFetch(domain:modelcontextprotocol.io)"
     ],
     "deny": []
   }

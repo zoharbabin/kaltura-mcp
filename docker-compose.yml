@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  kaltura-mcp-remote:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-secret-jwt-key-change-this}
+      - OAUTH_REDIRECT_URI=${OAUTH_REDIRECT_URI:-http://localhost:8000/oauth/callback}
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=8000
+      - SERVER_RELOAD=false
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/', timeout=3)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: Redis for production session management
+  # redis:
+  #   image: redis:7-alpine
+  #   restart: unless-stopped
+  #   volumes:
+  #     - redis_data:/data
+  #   command: redis-server --appendonly yes
+
+# volumes:
+#   redis_data:

@@ -14,22 +14,62 @@ class KalturaClientManager:
     """Manages Kaltura API client instances and sessions."""
     
     def __init__(self):
+        """Initialize the Kaltura client manager with lazy configuration loading."""
+        # Initialize state variables
+        self._client: Optional[KalturaClient] = None
+        self._ks: Optional[str] = None
+        self._session_start_time: Optional[float] = None
+        self._session_buffer = 300  # Refresh session 5 minutes before expiry
+        self._config_loaded = False
+        
+        # Configuration will be loaded lazily when first needed
+        self.service_url = ""
+        self.partner_id = 0
+        self.admin_secret = ""
+        self.user_id = ""
+        self.session_expiry = 86400
+    
+    def _load_config(self):
+        """Load configuration from environment variables."""
+        if self._config_loaded:
+            return
+        
+        # Debug: Log available environment variables FIRST
+        import sys
+        print("DEBUG: _load_config() called", file=sys.stderr)
+        all_env_vars = list(os.environ.keys())
+        kaltura_env_vars = [var for var in all_env_vars if var.startswith("KALTURA_")]
+        print(f"DEBUG: Available KALTURA_* environment variables: {kaltura_env_vars}", file=sys.stderr)
+        print(f"DEBUG: All environment variables count: {len(all_env_vars)}", file=sys.stderr)
+            
+        # Get configuration from environment variables
         self.service_url = os.getenv("KALTURA_SERVICE_URL", "https://www.kaltura.com")
         self.partner_id = int(os.getenv("KALTURA_PARTNER_ID", "0"))
         self.admin_secret = os.getenv("KALTURA_ADMIN_SECRET", "")
         self.user_id = os.getenv("KALTURA_USER_ID", "")
         self.session_expiry = int(os.getenv("KALTURA_SESSION_EXPIRY", "86400"))
         
-        # Validate required credentials on initialization
+        # Debug: Log what we got
+        print(f"DEBUG: KALTURA_SERVICE_URL = {self.service_url}", file=sys.stderr)
+        print(f"DEBUG: KALTURA_PARTNER_ID = {self.partner_id}", file=sys.stderr)
+        print(f"DEBUG: KALTURA_USER_ID = {self.user_id}", file=sys.stderr)
+        print(f"DEBUG: KALTURA_ADMIN_SECRET = {'SET' if self.admin_secret else 'NOT SET'}", file=sys.stderr)
+        
+        # Validate required credentials
         if not self.admin_secret:
             raise ValueError("KALTURA_ADMIN_SECRET environment variable is required")
         if not self.partner_id:
             raise ValueError("KALTURA_PARTNER_ID environment variable is required")
-        
-        self._client: Optional[KalturaClient] = None
-        self._ks: Optional[str] = None
-        self._session_start_time: Optional[float] = None
-        self._session_buffer = 300  # Refresh session 5 minutes before expiry
+            
+        self._config_loaded = True
+    
+    def has_required_config(self) -> bool:
+        """Check if required environment variables are available without raising an exception."""
+        try:
+            self._load_config()
+            return True
+        except ValueError:
+            return False
     
     def _mask_credential(self, credential: str, show_chars: int = 4) -> str:
         """Mask sensitive credential for logging."""
@@ -39,6 +79,9 @@ class KalturaClientManager:
     
     def get_client(self) -> KalturaClient:
         """Get or create a Kaltura client with valid session."""
+        # Load configuration from environment variables if not already loaded
+        self._load_config()
+        
         if not self._client or not self._ks or self._is_session_expired():
             self._create_session()
         return self._client
@@ -53,6 +96,9 @@ class KalturaClientManager:
     
     def _create_session(self):
         """Create a new Kaltura session."""
+        # Ensure configuration is loaded
+        self._load_config()
+        
         try:
             logger.info(f"Creating new Kaltura session for partner {self.partner_id} at {self.service_url}")
             

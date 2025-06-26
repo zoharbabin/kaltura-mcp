@@ -5,8 +5,6 @@ import os
 import sys
 import asyncio
 from typing import Any, Dict, List, Optional
-from dotenv import load_dotenv
-
 import mcp.types as types
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
@@ -24,8 +22,6 @@ from .tools import (
     list_attachment_assets,
     get_attachment_content,
 )
-
-load_dotenv()
 
 server = Server("kaltura-mcp")
 kaltura_manager = KalturaClientManager()
@@ -59,17 +55,24 @@ async def list_tools() -> List[types.Tool]:
         ),
         types.Tool(
             name="get_analytics",
-            description="Get viewing analytics and performance metrics for media entries",
+            description="Get comprehensive analytics using Kaltura Report API. Supports multiple report types including content performance, user engagement, geographic distribution, contributor stats, and more.",
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "entry_id": {"type": "string", "description": "Optional media entry ID for specific entry analytics"},
+                    "entry_id": {"type": "string", "description": "Optional media entry ID for specific entry analytics. If omitted, returns aggregated analytics."},
                     "from_date": {"type": "string", "description": "Start date for analytics (YYYY-MM-DD format)"},
                     "to_date": {"type": "string", "description": "End date for analytics (YYYY-MM-DD format)"},
+                    "report_type": {
+                        "type": "string",
+                        "enum": ["content", "user_engagement", "contributors", "geographic", "bandwidth", "storage", "system", "platforms", "operating_system", "browsers"],
+                        "description": "Type of analytics report: 'content' (top performing content), 'user_engagement' (user behavior), 'contributors' (top uploaders), 'geographic' (location data), 'bandwidth' (usage stats), 'storage' (storage metrics), 'system' (system reports), 'platforms' (device types), 'operating_system' (OS breakdown), 'browsers' (browser stats). Default: 'content'"
+                    },
+                    "categories": {"type": "string", "description": "Optional category filter (use full category name including parent paths)"},
+                    "limit": {"type": "integer", "description": "Maximum number of results to return (default: 20, max: 100)"},
                     "metrics": {
                         "type": "array",
                         "items": {"type": "string", "enum": ["plays", "views", "engagement", "drop_off"]},
-                        "description": "Metrics to retrieve: plays, views, engagement, drop_off",
+                        "description": "Metrics to retrieve: plays, views, engagement, drop_off. Used for reference/interpretation.",
                     },
                 },
                 "required": ["from_date", "to_date"],
@@ -103,13 +106,13 @@ async def list_tools() -> List[types.Tool]:
         ),
         types.Tool(
             name="search_entries",
-            description="Search and discover media entries with intelligent sorting and filtering. Supports content search across titles, descriptions, captions, and metadata. Use sort_field='created_at' and sort_order='desc' to find latest content.",
+            description="Search and discover media entries with intelligent sorting and filtering. Supports content search across titles, descriptions, captions, and metadata. IMPORTANT: To find the latest/newest videos, use query='*' with sort_field='created_at' and sort_order='desc'. This will list all entries sorted by creation date.",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "query": {
                         "type": "string", 
-                        "description": "Search query. Use '*' to list all entries, keywords for search, or exact phrases in quotes."
+                        "description": "Search query. Use '*' to list all entries (essential for finding latest/newest content), use keywords to search for specific content, or exact phrases in quotes."
                     },
                     "search_type": {
                         "type": "string",
@@ -247,17 +250,8 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[types.TextCont
         return [types.TextContent(type="text", text=f"Error executing {name}: {str(e)}")]
 
 
-async def main():
+async def async_main():
     """Run the Kaltura MCP server."""
-    # Validate required environment variables
-    required_vars = ["KALTURA_SERVICE_URL", "KALTURA_PARTNER_ID", "KALTURA_ADMIN_SECRET"]
-    missing_vars = [var for var in required_vars if not os.getenv(var)]
-    
-    if missing_vars:
-        print(f"Error: Missing required environment variables: {', '.join(missing_vars)}", file=sys.stderr)
-        print("Please copy .env.example to .env and fill in your Kaltura credentials.", file=sys.stderr)
-        return
-
     try:
         async with stdio_server() as (read_stream, write_stream):
             # Run the server with initialization options
@@ -269,5 +263,10 @@ async def main():
         traceback.print_exc(file=sys.stderr)
 
 
+def main():
+    """Entry point for the CLI script."""
+    asyncio.run(async_main())
+
+
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()

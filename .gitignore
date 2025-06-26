@@ -49,3 +49,13 @@ htmlcov/
 
 # MCP
 mcp.log
+
+# Docker
+.dockerignore
+
+# Logs
+logs/
+*.log
+
+# Production
+.env.production
