@@ -42,8 +42,7 @@ an individual is officially representing the community in public spaces.
 ## Enforcement
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported to the community leaders responsible for enforcement at
-zohar@babin.co.il. All complaints will be reviewed and investigated promptly
+reported to the repository maintainers. All complaints will be reviewed and investigated promptly
 and fairly.
 
 ## Attribution
