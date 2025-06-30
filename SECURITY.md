@@ -13,7 +13,7 @@ Currently, we support the following versions with security updates:
 We take security seriously. If you discover a security vulnerability, please follow these steps:
 
 1. **DO NOT** create a public issue
-2. Send details to: zohar@babin.co.il
+2. Send details to the repository maintainer.
 3. Include:
    - Description of the vulnerability
    - Steps to reproduce
