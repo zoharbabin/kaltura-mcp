@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 """Kaltura MCP Server - Provides tools for managing Kaltura API operations."""
 
-import os
 import sys
 import asyncio
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 import mcp.types as types
 from mcp.server import Server
 from mcp.server.stdio import stdio_server

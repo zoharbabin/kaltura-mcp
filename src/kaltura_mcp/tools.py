@@ -16,7 +16,6 @@ from KalturaClient.Plugins.Core import (
     KalturaMediaListResponse,
     KalturaFilterPager,
     KalturaMediaEntryFilter,
-    KalturaCategory,
     KalturaCategoryFilter,
     KalturaAssetFilter,
 )
