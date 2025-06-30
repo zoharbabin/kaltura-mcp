@@ -24,7 +24,8 @@
       "Bash(pytest:*)",
       "Bash(ruff check:*)",
       "Bash(tree:*)",
-      "Bash(./scripts/check.sh:*)"
+      "Bash(./scripts/check.sh:*)",
+      "Bash(mv:*)"
     ],
     "deny": []
   }

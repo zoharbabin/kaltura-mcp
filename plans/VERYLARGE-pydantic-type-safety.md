@@ -3,7 +3,7 @@
 **Complexity**: High  
 **Impact**: Very High - Runtime validation, better developer experience, and API safety  
 **Time Estimate**: 8 hours  
-**Dependencies**: Tool registry pattern, Split tools modules
+**Dependencies**: Tool registry pattern (optional for enhanced registry features)
 
 ## Problem
 The current system lacks:
