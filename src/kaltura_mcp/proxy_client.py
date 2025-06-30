@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 """Local MCP Proxy Client - Connects to remote Kaltura MCP server via stdio."""
 
+import asyncio
 import os
 import sys
-import json
-import asyncio
-import httpx
 from typing import Any, Dict
 
+import httpx
 import mcp.types as types
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
@@ -15,23 +14,20 @@ from mcp.server.stdio import stdio_server
 
 class RemoteMCPProxy:
     """Proxy that connects local MCP client to remote Kaltura MCP server."""
-    
+
     def __init__(self, server_url: str, access_token: str):
         self.server_url = server_url
         self.access_token = access_token
         self.headers = {
             "Content-Type": "application/json",
-            "Authorization": f"Bearer {access_token}"
+            "Authorization": f"Bearer {access_token}",
         }
-    
+
     async def send_message(self, message: Dict[str, Any]) -> Dict[str, Any]:
         """Send message to remote MCP server."""
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                self.server_url,
-                json=message,
-                headers=self.headers,
-                timeout=30.0
+                self.server_url, json=message, headers=self.headers, timeout=30.0
             )
             response.raise_for_status()
             return response.json()
@@ -55,17 +51,12 @@ proxy = RemoteMCPProxy(REMOTE_SERVER_URL, REMOTE_ACCESS_TOKEN)
 @server.list_tools()
 async def list_tools() -> list[types.Tool]:
     """List tools from remote server."""
-    message = {
-        "jsonrpc": "2.0",
-        "id": "list_tools",
-        "method": "tools/list",
-        "params": {}
-    }
-    
+    message = {"jsonrpc": "2.0", "id": "list_tools", "method": "tools/list", "params": {}}
+
     response = await proxy.send_message(message)
     if "error" in response:
         return []
-    
+
     tools_data = response.get("result", {}).get("tools", [])
     return [types.Tool(**tool) for tool in tools_data]
 
@@ -77,17 +68,14 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> list[types.TextCont
         "jsonrpc": "2.0",
         "id": f"call_tool_{name}",
         "method": "tools/call",
-        "params": {
-            "name": name,
-            "arguments": arguments
-        }
+        "params": {"name": name, "arguments": arguments},
     }
-    
+
     response = await proxy.send_message(message)
     if "error" in response:
         error_msg = response["error"].get("message", "Unknown error")
         return [types.TextContent(type="text", text=f"Error: {error_msg}")]
-    
+
     content = response.get("result", {}).get("content", [])
     return [types.TextContent(**item) for item in content]
 

@@ -2,6 +2,7 @@
 
 import pytest
 
+
 @pytest.fixture
 def valid_config_data():
     """Valid configuration data for testing our validation."""
@@ -10,5 +11,5 @@ def valid_config_data():
         "service_url": "https://test.kaltura.com",
         "admin_secret": "test_secret_12345678",
         "user_id": "test@example.com",
-        "session_expiry": 86400
+        "session_expiry": 86400,
     }

@@ -20,7 +20,11 @@
       "Bash(python:*)",
       "Bash(rm:*)",
       "Bash(rg:*)",
-      "WebFetch(domain:modelcontextprotocol.io)"
+      "WebFetch(domain:modelcontextprotocol.io)",
+      "Bash(pytest:*)",
+      "Bash(ruff check:*)",
+      "Bash(tree:*)",
+      "Bash(./scripts/check.sh:*)"
     ],
     "deny": []
   }
