@@ -6,6 +6,77 @@ This comprehensive guide documents all available Kaltura analytics report types,
 
 Kaltura provides over 150 different report types for analyzing content performance, user engagement, quality of experience, and system usage. Each report type serves specific analytical needs and provides unique insights into your media platform.
 
+## Enhanced Analytics Implementation
+
+The Kaltura MCP now provides two analytics implementations:
+
+1. **Standard Analytics** (`get_analytics`) - The original implementation with 39 report types
+2. **Enhanced Analytics** (`get_analytics_enhanced`) - Full implementation with 70+ report types and advanced features
+
+### Enhanced Features
+
+- ✅ **All Critical Report Types**: Including CONTENT_REPORT_REASONS, USER_USAGE, PARTNER_USAGE, VAR_USAGE
+- ✅ **Advanced Parameters**: dimension, interval, customVars, geographic filters
+- ✅ **CSV Export**: Direct CSV download URLs for large datasets
+- ✅ **Real-time Reports**: Live analytics with ~30 second updates
+- ✅ **QoE Reports**: Quality of Experience metrics
+- ✅ **Business Intelligence**: Webcast and event analytics
+- ✅ **Enhanced Data Parsing**: Timeline data, summary totals, multi-dimensional analysis
+
+### Usage Examples
+
+```python
+# Standard analytics (backward compatible)
+result = await get_analytics(
+    manager, 
+    from_date="2024-01-01",
+    to_date="2024-01-31",
+    report_type="content"
+)
+
+# Enhanced analytics with dimension
+result = await get_analytics_enhanced(
+    manager,
+    from_date="2024-01-01", 
+    to_date="2024-01-31",
+    report_type="content",
+    dimension="device",  # Group by device type
+    interval="days"      # Daily breakdown
+)
+
+# CSV export for large datasets  
+result = await get_analytics_enhanced(
+    manager,
+    from_date="2024-01-01",
+    to_date="2024-12-31", 
+    report_type="partner_usage",
+    response_format="csv"  # Returns download URL
+)
+
+# Real-time analytics
+result = await get_realtime_analytics(
+    manager,
+    report_type="realtime_users"
+)
+
+# QoE analytics
+result = await get_qoe_analytics(
+    manager,
+    from_date="2024-01-01",
+    to_date="2024-01-31",
+    metric="overview"
+)
+
+# Geographic analytics with filtering
+result = await get_geographic_analytics(
+    manager,
+    from_date="2024-01-01",
+    to_date="2024-01-31",
+    level="city",
+    country_filter="US"  # Cities in US only
+)
+```
+
 ## Report Categories
 
 ### 1. Content Performance Reports

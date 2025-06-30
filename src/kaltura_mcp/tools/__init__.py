@@ -4,6 +4,12 @@
 from .analytics import (
     get_analytics,
 )
+from .analytics_enhanced import (
+    get_analytics_enhanced,
+    get_geographic_analytics,
+    get_qoe_analytics,
+    get_realtime_analytics,
+)
 from .assets import (
     get_attachment_content,
     get_caption_content,
@@ -43,6 +49,10 @@ __all__ = [
     "list_media_entries",
     # Analytics operations
     "get_analytics",
+    "get_analytics_enhanced",
+    "get_geographic_analytics",
+    "get_qoe_analytics",
+    "get_realtime_analytics",
     # Search operations
     "esearch_entries",
     "list_categories",

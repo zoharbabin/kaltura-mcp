@@ -94,7 +94,7 @@ By participating in this project, you agree to abide by our Code of Conduct (see
 
 - Update README.md for user-facing changes
 - Add docstrings for new functions/classes
-- Update TUTORIAL.md with new use cases
+- Update docs/TUTORIAL.md with new use cases
 - Keep plans in `/plans` directory updated
 
 ## Questions?
