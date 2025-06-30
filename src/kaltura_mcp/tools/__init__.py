@@ -6,6 +6,7 @@ from .analytics import (
 )
 from .analytics_enhanced import (
     get_analytics_enhanced,
+    get_analytics_graph,
     get_geographic_analytics,
     get_qoe_analytics,
     get_realtime_analytics,
@@ -50,6 +51,7 @@ __all__ = [
     # Analytics operations
     "get_analytics",
     "get_analytics_enhanced",
+    "get_analytics_graph",
     "get_geographic_analytics",
     "get_qoe_analytics",
     "get_realtime_analytics",

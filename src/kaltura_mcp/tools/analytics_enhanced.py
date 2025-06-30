@@ -192,6 +192,203 @@ OBJECT_ID_REQUIRED_REPORTS = {
 }
 
 
+async def get_analytics_graph(
+    manager: KalturaClientManager,
+    from_date: str,
+    to_date: str,
+    report_type: str = "content",
+    entry_id: Optional[str] = None,
+    user_id: Optional[str] = None,
+    object_ids: Optional[str] = None,
+    interval: str = "days",
+    dimension: Optional[str] = None,
+    filters: Optional[Dict[str, str]] = None,
+) -> str:
+    """
+    Get analytics data in graph format suitable for visualization.
+
+    This function returns time-series data for creating charts and graphs.
+    Use this when you need data for visualization purposes.
+
+    Args:
+        manager: Kaltura client manager
+        from_date: Start date (YYYY-MM-DD)
+        to_date: End date (YYYY-MM-DD)
+        report_type: Type of analytics report
+        entry_id: Specific entry ID (if applicable)
+        user_id: Specific user ID (if applicable)
+        object_ids: Comma-separated object IDs
+        interval: Time interval (days, weeks, months)
+        dimension: Additional dimension for grouping
+        filters: Additional filters
+
+    Returns:
+        JSON with graph data including:
+        - Multiple metrics as separate time series
+        - Each series has metric name and array of date/value pairs
+        - Summary totals for the period
+
+    Example response:
+        {
+            "graphs": [
+                {
+                    "metric": "count_plays",
+                    "data": [
+                        {"date": "2024-01-01", "value": 100},
+                        {"date": "2024-01-02", "value": 150}
+                    ]
+                },
+                {
+                    "metric": "sum_time_viewed",
+                    "data": [
+                        {"date": "2024-01-01", "value": 3600},
+                        {"date": "2024-01-02", "value": 5400}
+                    ]
+                }
+            ],
+            "summary": {
+                "total_plays": 250,
+                "total_time_viewed": 9000
+            }
+        }
+    """
+    # Validate inputs
+    if report_type not in REPORT_TYPE_MAP:
+        return json.dumps(
+            {
+                "error": f"Unknown report type: {report_type}",
+                "available_types": list(REPORT_TYPE_MAP.keys()),
+            },
+            indent=2,
+        )
+
+    # Validate entry ID if provided
+    if entry_id and not validate_entry_id(entry_id):
+        return json.dumps({"error": "Invalid entry ID format"}, indent=2)
+
+    # Check if report type requires specific IDs
+    requires_object_ids = [
+        "engagement_timeline",
+        "specific_user_engagement",
+        "specific_user_usage",
+    ]
+    if report_type in requires_object_ids and not (entry_id or user_id or object_ids):
+        return json.dumps({"error": f"Report type '{report_type}' requires object IDs"}, indent=2)
+
+    try:
+        # Try to import KalturaReportType
+        try:
+            from KalturaClient.Plugins.Report import (
+                KalturaEndUserReportInputFilter,
+                KalturaReportInputFilter,
+            )
+        except ImportError:
+            # Fallback if imports fail
+            pass
+
+        # Get client
+        client = manager.get_client()
+
+        # Build report filter
+        try:
+            # Try to use KalturaEndUserReportInputFilter for user-facing reports
+            user_reports = [
+                "user_engagement",
+                "specific_user_engagement",
+                "user_top_content",
+                "user_usage",
+                "specific_user_usage",
+            ]
+
+            if report_type in user_reports:
+                report_filter = KalturaEndUserReportInputFilter()
+            else:
+                report_filter = KalturaReportInputFilter()
+        except Exception:
+            # Fallback to generic object
+            report_filter = type("obj", (object,), {})()
+
+        # Set filter properties
+        report_filter.fromDate = int(datetime.strptime(from_date, "%Y-%m-%d").timestamp())
+        report_filter.toDate = int(datetime.strptime(to_date, "%Y-%m-%d").timestamp())
+
+        # Set interval
+        if hasattr(report_filter, "interval"):
+            interval_map = {
+                "days": "days",
+                "weeks": "weeks",
+                "months": "months",
+                "years": "years",
+            }
+            report_filter.interval = interval_map.get(interval, "days")
+
+        # Add object filters
+        if entry_id:
+            report_filter.entryIdIn = entry_id
+        if user_id:
+            report_filter.userIds = user_id
+
+        # Set object IDs
+        obj_ids = object_ids
+        if entry_id and not obj_ids:
+            obj_ids = entry_id
+        elif user_id and not obj_ids:
+            obj_ids = user_id
+        else:
+            obj_ids = None
+
+        # Get report type ID
+        report_type_id = REPORT_TYPE_MAP[report_type]
+
+        # Call getGraphs API
+        graphs_result = client.report.getGraphs(
+            reportType=report_type_id,
+            reportInputFilter=report_filter,
+            dimension=dimension,
+            objectIds=obj_ids,
+        )
+
+        # Also get totals
+        totals_result = client.report.getTotal(
+            reportType=report_type_id,
+            reportInputFilter=report_filter,
+            objectIds=obj_ids,
+        )
+
+        # Parse results
+        response = {
+            "reportType": REPORT_TYPE_NAMES.get(report_type, "Analytics Report"),
+            "reportTypeCode": report_type,
+            "reportTypeId": report_type_id,
+            "dateRange": {"from": from_date, "to": to_date, "interval": interval},
+            "graphs": [],
+            "summary": {},
+        }
+
+        # Parse graph data
+        if graphs_result and isinstance(graphs_result, list):
+            for graph in graphs_result:
+                if hasattr(graph, "id") and hasattr(graph, "data"):
+                    graph_data = {"metric": graph.id, "data": parse_graph_data(graph.data)}
+                    response["graphs"].append(graph_data)
+
+        # Parse totals
+        if totals_result:
+            response["summary"] = parse_summary_data(totals_result)
+
+        return json.dumps(response, indent=2)
+
+    except Exception as e:
+        return json.dumps(
+            {
+                "error": f"Failed to retrieve graph data: {str(e)}",
+                "report_type": report_type,
+                "suggestion": "Use get_analytics_enhanced for table data instead",
+            },
+            indent=2,
+        )
+
+
 async def get_analytics_enhanced(
     manager: KalturaClientManager,
     from_date: str,
@@ -495,6 +692,29 @@ def parse_summary_data(summary_result) -> Dict[str, any]:
             if i < len(values):
                 summary[header] = convert_value(values[i])
     return summary
+
+
+def parse_graph_data(graph_data: str) -> List[Dict[str, Union[str, float]]]:
+    """Parse graph data format (date|value;date|value)."""
+    points = []
+    if not graph_data:
+        return points
+
+    # Split by semicolon to get individual data points
+    data_points = graph_data.rstrip(";").split(";")
+
+    for point in data_points:
+        if "|" in point:
+            date_str, value_str = point.split("|", 1)
+            # Convert date from YYYYMMDD to YYYY-MM-DD
+            if len(date_str) == 8:
+                formatted_date = f"{date_str[:4]}-{date_str[4:6]}-{date_str[6:8]}"
+            else:
+                formatted_date = date_str
+
+            points.append({"date": formatted_date, "value": convert_value(value_str)})
+
+    return points
 
 
 # Additional specialized functions

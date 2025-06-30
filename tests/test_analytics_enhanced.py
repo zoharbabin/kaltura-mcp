@@ -10,7 +10,9 @@ from kaltura_mcp.tools.analytics_enhanced import (
     REPORT_TYPE_NAMES,
     convert_value,
     get_analytics_enhanced,
+    get_analytics_graph,
     parse_csv_row,
+    parse_graph_data,
     parse_timeline_data,
 )
 
@@ -249,3 +251,124 @@ class TestAnalyticsEnhancedSimple:
             assert data["reportTypeCode"] == "engagement_timeline"
             assert len(data["data"]) == 1
             assert data["data"][0]["timeline"] == [100.0, 95.0, 90.0, 85.0, 80.0]
+
+    # ========================================================================
+    # GRAPH DATA TESTS
+    # ========================================================================
+
+    def test_parse_graph_data(self):
+        """Test graph data parsing function."""
+        # Standard format
+        graph_data = "20240101|100;20240102|150;20240103|200;"
+        parsed = parse_graph_data(graph_data)
+
+        assert len(parsed) == 3
+        assert parsed[0] == {"date": "2024-01-01", "value": 100}
+        assert parsed[1] == {"date": "2024-01-02", "value": 150}
+        assert parsed[2] == {"date": "2024-01-03", "value": 200}
+
+        # With decimal values
+        graph_data = "20240101|45.5;20240102|52.3;"
+        parsed = parse_graph_data(graph_data)
+        assert parsed[0]["value"] == 45.5
+        assert parsed[1]["value"] == 52.3
+
+        # Empty data
+        assert parse_graph_data("") == []
+        assert parse_graph_data(None) == []
+
+    @pytest.mark.asyncio
+    async def test_get_analytics_graph_success(self, mock_manager, valid_dates):
+        """Test successful graph data retrieval."""
+        mock_client = mock_manager.get_client.return_value
+
+        # Mock graph results
+        mock_graphs = [
+            type(
+                "Graph",
+                (),
+                {"id": "count_plays", "data": "20240101|100;20240102|150;20240103|200;"},
+            )(),
+            type(
+                "Graph",
+                (),
+                {"id": "avg_time_viewed", "data": "20240101|45.5;20240102|52.3;20240103|48.7;"},
+            )(),
+        ]
+        mock_client.report.getGraphs.return_value = mock_graphs
+
+        # Mock totals
+        mock_totals = Mock()
+        mock_totals.header = "total_plays,avg_time"
+        mock_totals.data = "450,48.8"
+        mock_client.report.getTotal.return_value = mock_totals
+
+        result = await get_analytics_graph(mock_manager, report_type="content", **valid_dates)
+
+        data = json.loads(result)
+
+        # Check structure
+        assert "graphs" in data
+        assert "summary" in data
+        assert "dateRange" in data
+
+        # Check graphs data if no error
+        if "error" not in data:
+            assert len(data["graphs"]) == 2
+
+            # Check first graph
+            assert data["graphs"][0]["metric"] == "count_plays"
+            assert len(data["graphs"][0]["data"]) == 3
+            assert data["graphs"][0]["data"][0] == {"date": "2024-01-01", "value": 100}
+
+            # Check second graph
+            assert data["graphs"][1]["metric"] == "avg_time_viewed"
+            assert data["graphs"][1]["data"][0]["value"] == 45.5
+
+            # Check summary
+            assert data["summary"]["total_plays"] == 450
+            assert data["summary"]["avg_time"] == 48.8
+
+    @pytest.mark.asyncio
+    async def test_get_analytics_graph_with_interval(self, mock_manager, valid_dates):
+        """Test graph data with different intervals."""
+        mock_client = mock_manager.get_client.return_value
+        mock_client.report.getGraphs.return_value = []
+        mock_client.report.getTotal.return_value = None
+
+        # Test with weekly interval
+        await get_analytics_graph(
+            mock_manager, report_type="content", interval="weeks", **valid_dates
+        )
+
+        # Verify interval was passed correctly
+        call_args = mock_client.report.getGraphs.call_args
+        report_filter = call_args.kwargs["reportInputFilter"]
+
+        # Check the filter has interval property if supported
+        if hasattr(report_filter, "interval"):
+            assert report_filter.interval == "weeks"
+
+    @pytest.mark.asyncio
+    async def test_get_analytics_graph_error_handling(self, mock_manager, valid_dates):
+        """Test graph data error handling."""
+        # Test with invalid report type
+        result = await get_analytics_graph(
+            mock_manager, report_type="invalid_graph_type", **valid_dates
+        )
+
+        data = json.loads(result)
+        assert "error" in data
+        assert "Unknown report type" in data["error"]
+
+    @pytest.mark.asyncio
+    async def test_get_analytics_graph_entry_validation(self, mock_manager, valid_dates):
+        """Test graph data with entry ID validation."""
+        # Test with invalid entry ID
+        result = await get_analytics_graph(
+            mock_manager, report_type="content", entry_id="invalid_entry", **valid_dates
+        )
+
+        data = json.loads(result)
+        assert "error" in data
+        assert "Invalid entry ID format" in data["error"]

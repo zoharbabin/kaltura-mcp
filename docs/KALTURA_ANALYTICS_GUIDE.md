@@ -8,10 +8,11 @@ Kaltura provides over 150 different report types for analyzing content performan
 
 ## Enhanced Analytics Implementation
 
-The Kaltura MCP now provides two analytics implementations:
+The Kaltura MCP now provides three analytics implementations:
 
 1. **Standard Analytics** (`get_analytics`) - The original implementation with 39 report types
 2. **Enhanced Analytics** (`get_analytics_enhanced`) - Full implementation with 70+ report types and advanced features
+3. **Graph Analytics** (`get_analytics_graph`) - Time-series data optimized for visualization and charting
 
 ### Enhanced Features
 
@@ -22,6 +23,7 @@ The Kaltura MCP now provides two analytics implementations:
 - ✅ **QoE Reports**: Quality of Experience metrics
 - ✅ **Business Intelligence**: Webcast and event analytics
 - ✅ **Enhanced Data Parsing**: Timeline data, summary totals, multi-dimensional analysis
+- ✅ **Graph Data Support**: Time-series data formatted for visualization tools
 
 ### Usage Examples
 
@@ -75,6 +77,82 @@ result = await get_geographic_analytics(
     level="city",
     country_filter="US"  # Cities in US only
 )
+
+# Graph data for visualization (NEW!)
+result = await get_analytics_graph(
+    manager,
+    from_date="2024-01-01",
+    to_date="2024-01-31",
+    report_type="content",
+    entry_id="1_xyz123",
+    interval="days"  # Daily data points
+)
+# Returns time-series data perfect for charts:
+# {
+#   "graphs": [
+#     {
+#       "metric": "count_plays",
+#       "data": [
+#         {"date": "2024-01-01", "value": 100},
+#         {"date": "2024-01-02", "value": 150},
+#         ...
+#       ]
+#     },
+#     {
+#       "metric": "avg_time_viewed",
+#       "data": [...]
+#     }
+#   ],
+#   "summary": {...}
+# }
+```
+
+### When to Use Each Analytics Function
+
+1. **`get_analytics`** - Use for backward compatibility or simple table data
+2. **`get_analytics_enhanced`** - Use for advanced filtering, dimensions, or CSV export
+3. **`get_analytics_graph`** - Use when you need time-series data for creating charts, graphs, or visualizations
+
+## Graph Data for Visualization
+
+When you need analytics data for creating charts, dashboards, or visualizations, use `get_analytics_graph`. This function:
+
+- Returns multiple metrics as separate time series
+- Formats dates consistently for easy parsing
+- Includes all relevant metrics for the report type
+- Provides summary totals alongside time-series data
+
+### Common Visualization Use Cases
+
+1. **Performance Dashboards**: Show plays, views, and engagement over time
+2. **Trend Analysis**: Visualize content popularity trends
+3. **Comparative Analytics**: Compare multiple metrics on the same timeline
+4. **Real-time Monitoring**: Display live user activity and QoS metrics
+
+### Example: Creating a Chart from Graph Data
+
+```python
+# Get graph data
+graph_data = await get_analytics_graph(
+    manager,
+    from_date="2024-01-01",
+    to_date="2024-01-31",
+    report_type="content",
+    interval="days"
+)
+
+data = json.loads(graph_data)
+
+# Extract data for charting libraries
+for graph in data["graphs"]:
+    metric_name = graph["metric"]
+    time_series = graph["data"]
+    
+    # Format for Chart.js, D3.js, or other visualization libraries
+    dates = [point["date"] for point in time_series]
+    values = [point["value"] for point in time_series]
+    
+    # Create your chart with dates and values
 ```
 
 ## Report Categories
