@@ -65,13 +65,12 @@ The script will guide you through:
 **📋 Manual Method**: Copy and edit the example file:
 
 ```bash
-# For stdio (local) mode
-cp .env.stdio.example .env
-
-# For remote (hosted) mode  
-cp .env.remote.example .env
+# Copy the example file
+cp .env.example .env
 
 # Edit with your credentials
+# - For stdio mode: Only fill in KALTURA_* variables
+# - For remote mode: Fill in JWT_SECRET_KEY, OAUTH_*, and SERVER_* variables
 nano .env
 
 # Set secure permissions
