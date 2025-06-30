@@ -36,15 +36,20 @@ class KalturaClientManager:
             return
 
         # Debug: Log available environment variables FIRST
-        import sys
-
-        print("DEBUG: _load_config() called", file=sys.stderr)
+        # Check for available Kaltura environment variables
         all_env_vars = list(os.environ.keys())
         kaltura_env_vars = [var for var in all_env_vars if var.startswith("KALTURA_")]
-        print(
-            f"DEBUG: Available KALTURA_* environment variables: {kaltura_env_vars}", file=sys.stderr
-        )
-        print(f"DEBUG: All environment variables count: {len(all_env_vars)}", file=sys.stderr)
+
+        # Log configuration loading if debug mode is enabled
+        if os.getenv("KALTURA_DEBUG") == "true":
+            import sys
+
+            print("DEBUG: _load_config() called", file=sys.stderr)
+            print(
+                f"DEBUG: Available KALTURA_* environment variables: {kaltura_env_vars}",
+                file=sys.stderr,
+            )
+            print(f"DEBUG: All environment variables count: {len(all_env_vars)}", file=sys.stderr)
 
         # Get configuration from environment variables
         self.service_url = os.getenv("KALTURA_SERVICE_URL", "https://www.kaltura.com")
@@ -53,14 +58,15 @@ class KalturaClientManager:
         self.user_id = os.getenv("KALTURA_USER_ID", "")
         self.session_expiry = int(os.getenv("KALTURA_SESSION_EXPIRY", "86400"))
 
-        # Debug: Log what we got
-        print(f"DEBUG: KALTURA_SERVICE_URL = {self.service_url}", file=sys.stderr)
-        print(f"DEBUG: KALTURA_PARTNER_ID = {self.partner_id}", file=sys.stderr)
-        print(f"DEBUG: KALTURA_USER_ID = {self.user_id}", file=sys.stderr)
-        print(
-            f"DEBUG: KALTURA_ADMIN_SECRET = {'SET' if self.admin_secret else 'NOT SET'}",
-            file=sys.stderr,
-        )
+        # Debug: Log configuration values if debug mode is enabled
+        if os.getenv("KALTURA_DEBUG") == "true":
+            print(f"DEBUG: KALTURA_SERVICE_URL = {self.service_url}", file=sys.stderr)
+            print(f"DEBUG: KALTURA_PARTNER_ID = {self.partner_id}", file=sys.stderr)
+            print(f"DEBUG: KALTURA_USER_ID = {self.user_id}", file=sys.stderr)
+            print(
+                f"DEBUG: KALTURA_ADMIN_SECRET = {'SET' if self.admin_secret else 'NOT SET'}",
+                file=sys.stderr,
+            )
 
         # Validate required credentials
         if not self.admin_secret:

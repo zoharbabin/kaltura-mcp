@@ -273,8 +273,9 @@ kaltura-mcp-remote
 docker-compose up -d
 ```
 
-**Option C: Production with Gunicorn**
+**Option C: Production with Gunicorn (Optional)**
 ```bash
+# Install gunicorn separately if needed for production
 pip install gunicorn
 gunicorn -w 4 -k uvicorn.workers.UvicornWorker kaltura_mcp.remote_server:app
 ```
