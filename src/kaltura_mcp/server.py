@@ -97,18 +97,55 @@ async def list_tools() -> List[types.Tool]:
                     "report_type": {
                         "type": "string",
                         "enum": [
+                            # Content Performance
                             "content",
+                            "content_dropoff",
+                            "content_interactions",
+                            "engagement_timeline",
+                            "content_contributions",
+                            # User Analytics
                             "user_engagement",
-                            "contributors",
+                            "specific_user_engagement",
+                            "user_top_content",
+                            "user_content_dropoff",
+                            "user_content_interactions",
+                            "user_usage",
+                            "unique_users",
+                            # Geographic
                             "geographic",
-                            "bandwidth",
-                            "storage",
-                            "system",
+                            "geographic_country",
+                            "geographic_region",
+                            "geographic_city",
+                            # Platform & Technology
                             "platforms",
                             "operating_system",
+                            "operating_system_families",
                             "browsers",
+                            "browsers_families",
+                            # Creators & Contributors
+                            "contributors",
+                            "creators",
+                            "content_creator",
+                            "content_contributors",
+                            # Distribution
+                            "bandwidth",
+                            "playback_context",
+                            "sources",
+                            # Usage & Infrastructure
+                            "partner_usage",
+                            "storage",
+                            "system",
+                            "vpaas_usage",
+                            "entry_usage",
+                            "cdn_bandwidth",
+                            # Advanced Analytics
+                            "playback_rate",
+                            "player_interactions",
+                            "percentiles",
+                            "interactive_video",
+                            "interactive_nodes",
                         ],
-                        "description": "Type of analytics report: 'content' (top performing content), 'user_engagement' (user behavior), 'contributors' (top uploaders), 'geographic' (location data), 'bandwidth' (usage stats), 'storage' (storage metrics), 'system' (system reports), 'platforms' (device types), 'operating_system' (OS breakdown), 'browsers' (browser stats). Default: 'content'",
+                        "description": "Type of analytics report. Key options include: 'content' (top content), 'content_dropoff' (viewer retention), 'engagement_timeline' (timeline heatmap showing most watched/replayed segments), 'user_engagement' (user behavior), 'geographic_*' (location analytics), 'platforms/browsers/operating_system' (technology stats), 'playback_rate' (speed preferences), 'player_interactions' (control usage). See docs for full list. Default: 'content'",
                     },
                     "categories": {
                         "type": "string",

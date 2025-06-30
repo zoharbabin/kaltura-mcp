@@ -207,7 +207,8 @@ The remote server provides:
    - Parameters: search_text, limit
 
 3. **get_analytics** - Get viewing analytics and performance metrics for media entries
-   - Parameters: from_date (required), to_date (required), entry_id, metrics
+   - Parameters: from_date (required), to_date (required), entry_id, report_type (40+ types available including engagement_timeline for timeline heatmaps), metrics
+   - See [Analytics Guide](docs/KALTURA_ANALYTICS_GUIDE.md) for all report types
 
 4. **get_download_url** - Get direct download URL for media files
    - Parameters: entry_id (required), flavor_id
@@ -316,6 +317,20 @@ const transport = new HTTPTransport({
   }
 });
 ```
+
+### Analytics Documentation
+
+The MCP server provides access to over 40 different analytics report types through the `get_analytics` tool:
+
+- **Engagement Timeline Reports**: Analyze which parts of videos get the most engagement
+- **Content Performance**: Views, plays, drop-off analysis
+- **Geographic Analytics**: Country, region, and city-level data
+- **Platform Analytics**: Device, browser, and OS breakdowns
+- **User Behavior**: Engagement patterns and unique viewer metrics
+
+For comprehensive documentation, see:
+- [Analytics Guide](docs/KALTURA_ANALYTICS_GUIDE.md) - Complete list of all report types
+- [Analytics Examples](examples/analytics_examples.py) - Code examples for each report type
 
 ### Security Considerations
 
