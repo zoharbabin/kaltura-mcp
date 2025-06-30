@@ -1,9 +1,10 @@
-# Tool Registry Pattern - COMPLEX (4 hours)
+# Tool Registry Pattern - COMPLEX (3 hours)
 
-**Complexity**: Medium-High  
+**Complexity**: Medium (reduced from Medium-High)  
 **Impact**: Very High - Eliminates code duplication and improves maintainability  
-**Time Estimate**: 4 hours  
-**Dependencies**: Configuration management, Basic unit tests
+**Priority**: HIGH (removes architectural duplication)  
+**Time Estimate**: 3 hours (reduced from 4)  
+**Dependencies**: None (can be done independently)
 
 ## Problem
 - Tool definitions are duplicated between `server.py` and `remote_server.py`
