@@ -206,9 +206,15 @@ The remote server provides:
 2. **list_categories** - List and search content categories
    - Parameters: search_text, limit
 
-3. **get_analytics** - Get viewing analytics and performance metrics for media entries
-   - Parameters: from_date (required), to_date (required), entry_id, report_type (40+ types available including engagement_timeline for timeline heatmaps), metrics
-   - See [Analytics Guide](docs/KALTURA_ANALYTICS_GUIDE.md) for all report types
+3. **Analytics Tools** - Comprehensive analytics suite with purpose-driven functions:
+   - **get_analytics** - General analytics data for reporting and analysis
+   - **get_analytics_timeseries** - Time-series data optimized for charts
+   - **get_video_retention** - Detailed viewer retention analysis throughout videos
+   - **get_realtime_metrics** - Live analytics updated every ~30 seconds
+   - **get_quality_metrics** - Quality of Experience (QoE) and streaming performance
+   - **get_geographic_breakdown** - Location-based analytics at various granularities
+   - **list_analytics_capabilities** - Discover all available analytics functions
+   - See [Analytics Guide](docs/KALTURA_ANALYTICS_GUIDE.md) for detailed usage
 
 4. **get_download_url** - Get direct download URL for media files
    - Parameters: entry_id (required), flavor_id
@@ -320,17 +326,25 @@ const transport = new HTTPTransport({
 
 ### Analytics Documentation
 
-The MCP server provides access to over 40 different analytics report types through the `get_analytics` tool:
+The MCP server provides a comprehensive analytics suite with purpose-driven functions optimized for different use cases:
 
-- **Engagement Timeline Reports**: Analyze which parts of videos get the most engagement
-- **Content Performance**: Views, plays, drop-off analysis
-- **Geographic Analytics**: Country, region, and city-level data
-- **Platform Analytics**: Device, browser, and OS breakdowns
-- **User Behavior**: Engagement patterns and unique viewer metrics
+**Purpose-Built Analytics Functions:**
+- **get_analytics**: Comprehensive reporting data in table format for detailed analysis
+- **get_analytics_timeseries**: Time-series data optimized for charts and visualizations
+- **get_video_retention**: Detailed viewer retention curves showing exactly where viewers drop off
+- **get_realtime_metrics**: Live analytics updated every ~30 seconds for monitoring
+- **get_quality_metrics**: Quality of Experience (QoE) metrics for streaming performance
+- **get_geographic_breakdown**: Location-based analytics at country, region, or city level
+
+**Analytics Capabilities:**
+- 60+ report types covering content, users, geography, platforms, and more
+- Raw data access for custom analysis and visualization
+- Intelligent insights including drop-off points and engagement patterns
+- Support for filtering by date ranges, categories, users, and dimensions
 
 For comprehensive documentation, see:
-- [Analytics Guide](docs/KALTURA_ANALYTICS_GUIDE.md) - Complete list of all report types
-- [Analytics Examples](examples/analytics_examples.py) - Code examples for each report type
+- [Analytics Guide](docs/KALTURA_ANALYTICS_GUIDE.md) - Complete reference for all analytics functions
+- [Analytics Examples](examples/analytics_examples.py) - Code examples and visualizations
 
 ### Security Considerations
 

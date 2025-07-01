@@ -25,7 +25,9 @@
       "Bash(ruff check:*)",
       "Bash(tree:*)",
       "Bash(./scripts/check.sh:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(awk:*)",
+      "Bash(sed:*)"
     ],
     "deny": []
   }

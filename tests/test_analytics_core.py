@@ -1,23 +1,26 @@
-"""Simplified tests for enhanced analytics functionality."""
+"""Tests for core analytics functionality."""
 
 import json
 from unittest.mock import Mock
 
 import pytest
 
-from kaltura_mcp.tools.analytics_enhanced import (
+from kaltura_mcp.tools.analytics_core import (
     REPORT_TYPE_MAP,
     REPORT_TYPE_NAMES,
+    analyze_retention_insights,
+    calculate_retention_curve,
     convert_value,
     get_analytics_enhanced,
     get_analytics_graph,
     parse_csv_row,
     parse_graph_data,
+    parse_percentiles_data,
     parse_timeline_data,
 )
 
 
-class TestAnalyticsEnhancedSimple:
+class TestAnalyticsCore:
     """Simplified test suite for enhanced analytics."""
 
     @pytest.fixture
@@ -199,6 +202,13 @@ class TestAnalyticsEnhancedSimple:
         assert convert_value("") == ""
         assert convert_value("   ") == ""
 
+        # Test semicolon-separated values (like "0;1" from PERCENTILES)
+        assert convert_value("0;1") == 0
+        assert convert_value("50;100") == 50
+        assert convert_value("99;1") == 99
+        assert convert_value("12.5;25") == 12.5
+        assert convert_value("abc;def") == "abc;def"  # Non-numeric returns as string
+
     # ========================================================================
     # INTEGRATION TESTS
     # ========================================================================
@@ -372,3 +382,221 @@ class TestAnalyticsEnhancedSimple:
         data = json.loads(result)
         assert "error" in data
         assert "Invalid entry ID format" in data["error"]
+
+    # ========================================================================
+    # PERCENTILES & VIDEO TIMELINE TESTS
+    # ========================================================================
+
+    def test_percentiles_data_parsing(self):
+        """Test parsing of percentiles report data."""
+        # Standard percentiles data
+        data = "0|0|0;1|100|85;2|98|84;50|55|50;100|38|35;"
+        parsed = parse_percentiles_data(data)
+
+        assert len(parsed) == 5
+        assert parsed[0] == {
+            "percentile": 0,
+            "count_viewers": 0,
+            "unique_known_users": 0,
+            "replay_count": 0,
+        }
+        assert parsed[1] == {
+            "percentile": 1,
+            "count_viewers": 100,
+            "unique_known_users": 85,
+            "replay_count": 15,
+        }
+        assert parsed[4] == {
+            "percentile": 100,
+            "count_viewers": 38,
+            "unique_known_users": 35,
+            "replay_count": 3,
+        }
+
+        # Empty data
+        assert parse_percentiles_data("") == []
+        assert parse_percentiles_data(None) == []
+
+    def test_calculate_retention_curve(self):
+        """Test retention curve calculation."""
+        percentiles_data = [
+            {"percentile": 0, "count_viewers": 0, "unique_known_users": 0, "replay_count": 0},
+            {"percentile": 1, "count_viewers": 100, "unique_known_users": 85, "replay_count": 15},
+            {"percentile": 50, "count_viewers": 55, "unique_known_users": 50, "replay_count": 5},
+            {"percentile": 100, "count_viewers": 38, "unique_known_users": 35, "replay_count": 3},
+        ]
+
+        retention_curve = calculate_retention_curve(percentiles_data)
+
+        assert len(retention_curve) == 4
+        # Check normalization (based on percentile 1 as baseline)
+        assert retention_curve[1]["retention_rate"] == 100.0  # 100/100 * 100
+        assert abs(retention_curve[2]["retention_rate"] - 55.0) < 0.01  # 55/100 * 100
+        assert abs(retention_curve[3]["retention_rate"] - 38.0) < 0.01  # 38/100 * 100
+
+        # Check other fields
+        assert retention_curve[1]["viewers"] == 100
+        assert retention_curve[1]["unique_users"] == 85
+        assert retention_curve[1]["replays"] == 15
+
+    def test_analyze_retention_insights(self):
+        """Test retention insights analysis."""
+        retention_curve = [
+            {
+                "percentile": 0,
+                "retention_rate": 100.0,
+                "viewers": 100,
+                "unique_users": 85,
+                "replays": 15,
+            },
+            {
+                "percentile": 10,
+                "retention_rate": 85.0,
+                "viewers": 85,
+                "unique_users": 80,
+                "replays": 5,
+            },
+            {
+                "percentile": 25,
+                "retention_rate": 70.0,
+                "viewers": 70,
+                "unique_users": 65,
+                "replays": 5,
+            },
+            {
+                "percentile": 50,
+                "retention_rate": 45.0,
+                "viewers": 45,
+                "unique_users": 40,
+                "replays": 5,
+            },
+            {
+                "percentile": 75,
+                "retention_rate": 40.0,
+                "viewers": 40,
+                "unique_users": 35,
+                "replays": 5,
+            },
+            {
+                "percentile": 95,
+                "retention_rate": 35.0,
+                "viewers": 35,
+                "unique_users": 30,
+                "replays": 5,
+            },
+            {
+                "percentile": 100,
+                "retention_rate": 33.0,
+                "viewers": 33,
+                "unique_users": 30,
+                "replays": 3,
+            },
+        ]
+
+        insights = analyze_retention_insights(retention_curve)
+
+        # Check insights
+        assert "avg_retention" in insights
+        assert "fifty_percent_point" in insights
+        assert "completion_rate" in insights
+        assert "major_drop_offs" in insights
+        assert "replay_hotspots" in insights
+        assert "engagement_score" in insights
+
+        # Verify fifty percent point
+        assert insights["fifty_percent_point"] == 50  # First point where retention <= 50%
+
+        # Verify completion rate
+        assert insights["completion_rate"] == 35.0  # Value at 95%+
+
+        # Verify drop-offs detected
+        assert len(insights["major_drop_offs"]) > 0
+        assert insights["major_drop_offs"][0]["percentile"] == 10  # 15% drop
+        assert insights["major_drop_offs"][0]["drop_percentage"] == 15.0
+
+    @pytest.mark.asyncio
+    async def test_get_video_timeline_analytics_basic(self, mock_manager, valid_dates):
+        """Test basic video timeline analytics retrieval."""
+        # Mock the client
+        mock_client = mock_manager.get_client.return_value
+
+        # Mock the raw API response
+        mock_result = Mock()
+        mock_result.header = "percentile,count_viewers,unique_known_users"
+        mock_result.data = "0,0,0\n1,100,85\n50,55,50\n100,38,35"
+        mock_result.totalCount = 101
+        mock_client.report.getTable.return_value = mock_result
+
+        from kaltura_mcp.tools.analytics_core import get_video_timeline_analytics
+
+        result = await get_video_timeline_analytics(mock_manager, entry_id="1_test123")
+        data = json.loads(result)
+
+        # Check raw response structure
+        assert "video_id" in data
+        assert data["video_id"] == "1_test123"
+        assert "kaltura_raw_response" in data
+        assert "report_info" in data
+
+        # Check raw response data
+        raw_response = data["kaltura_raw_response"]
+        assert "header" in raw_response
+        assert "data" in raw_response
+        assert raw_response["header"] == "percentile,count_viewers,unique_known_users"
+
+    @pytest.mark.asyncio
+    async def test_get_video_timeline_analytics_with_user_filter(self, mock_manager):
+        """Test video timeline analytics with user filtering."""
+        mock_client = mock_manager.get_client.return_value
+
+        # Mock response
+        mock_result = Mock()
+        mock_result.header = "percentile,count_viewers,unique_known_users"
+        mock_result.data = "0|0|0;1|50|1;50|30|1;100|20|1;"
+        mock_result.totalCount = 101
+        mock_client.report.getTable.return_value = mock_result
+
+        from kaltura_mcp.tools.analytics_core import get_video_timeline_analytics
+
+        # Test with specific user
+        result = await get_video_timeline_analytics(
+            mock_manager, entry_id="1_test123", user_ids="user@example.com"
+        )
+
+        data = json.loads(result)
+
+        # Check filter was applied
+        assert data["filter"]["user_ids"] == "user@example.com"
+        # Check we got raw response
+        assert "kaltura_raw_response" in data
+        assert (
+            data["kaltura_raw_response"]["header"] == "percentile,count_viewers,unique_known_users"
+        )
+
+    @pytest.mark.asyncio
+    async def test_get_video_timeline_analytics_invalid_entry(self, mock_manager):
+        """Test video timeline analytics with invalid entry ID."""
+        from kaltura_mcp.tools.analytics_core import get_video_timeline_analytics
+
+        # Test with invalid entry ID
+        result = await get_video_timeline_analytics(mock_manager, entry_id="invalid_entry")
+
+        data = json.loads(result)
+        assert "error" in data
+        assert "Valid entry_id required" in data["error"]
+
+    @pytest.mark.asyncio
+    async def test_percentiles_report_type_aliases(self, mock_manager, valid_dates):
+        """Test that all percentiles aliases map to report ID 43."""
+        aliases = [
+            "percentiles",
+            "video_timeline",
+            "retention_curve",
+            "viewer_retention",
+            "drop_off_analysis",
+            "replay_detection",
+        ]
+
+        for alias in aliases:
+            assert REPORT_TYPE_MAP[alias] == 43
+            assert alias in REPORT_TYPE_NAMES

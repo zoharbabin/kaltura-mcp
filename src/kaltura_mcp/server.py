@@ -29,11 +29,18 @@ except ImportError:
 from .kaltura_client import KalturaClientManager
 from .tools import (
     get_analytics,
+    get_analytics_timeseries,
     get_attachment_content,
     get_caption_content,
     get_download_url,
+    get_geographic_breakdown,
     get_media_entry,
+    get_quality_metrics,
+    get_realtime_metrics,
     get_thumbnail_url,
+    get_video_retention,
+    get_video_timeline_analytics,
+    list_analytics_capabilities,
     list_attachment_assets,
     list_caption_assets,
     list_categories,
@@ -78,93 +85,229 @@ async def list_tools() -> List[types.Tool]:
         ),
         types.Tool(
             name="get_analytics",
-            description="Get comprehensive analytics using Kaltura Report API. Supports multiple report types including content performance, user engagement, geographic distribution, contributor stats, and more.",
+            description="Get comprehensive analytics data for detailed reporting and analysis. Use this for performance metrics, rankings, comparisons, and exporting tabular data. Supports 60+ report types.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "from_date": {
+                        "type": "string",
+                        "description": "Start date (YYYY-MM-DD)",
+                    },
+                    "to_date": {
+                        "type": "string",
+                        "description": "End date (YYYY-MM-DD)",
+                    },
+                    "report_type": {
+                        "type": "string",
+                        "description": "Report type (default: 'content'). Options: content, user_engagement, geographic, platforms, bandwidth, etc. See list_analytics_capabilities for full list.",
+                    },
+                    "entry_id": {
+                        "type": "string",
+                        "description": "Optional media entry ID for content-specific reports",
+                    },
+                    "user_id": {
+                        "type": "string",
+                        "description": "Optional user ID for user-specific reports",
+                    },
+                    "categories": {
+                        "type": "string",
+                        "description": "Optional category filter",
+                    },
+                    "dimension": {
+                        "type": "string",
+                        "description": "Optional dimension for grouping (e.g., 'device', 'country')",
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "description": "Max results per page (default: 50)",
+                    },
+                },
+                "required": ["from_date", "to_date"],
+            },
+        ),
+        types.Tool(
+            name="get_analytics_timeseries",
+            description="Get time-series analytics data optimized for charts and visualizations. Use this when creating graphs, dashboards, or tracking trends over time.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "from_date": {
+                        "type": "string",
+                        "description": "Start date (YYYY-MM-DD)",
+                    },
+                    "to_date": {
+                        "type": "string",
+                        "description": "End date (YYYY-MM-DD)",
+                    },
+                    "report_type": {
+                        "type": "string",
+                        "description": "Report type (default: 'content')",
+                    },
+                    "metrics": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "Metrics to include (e.g., ['plays', 'views'])",
+                    },
+                    "entry_id": {
+                        "type": "string",
+                        "description": "Optional specific entry ID",
+                    },
+                    "interval": {
+                        "type": "string",
+                        "enum": ["hours", "days", "weeks", "months"],
+                        "description": "Time interval (default: 'days')",
+                    },
+                },
+                "required": ["from_date", "to_date"],
+            },
+        ),
+        types.Tool(
+            name="get_video_retention",
+            description="Analyze viewer retention throughout a video with 101-point granularity. Shows where viewers drop off, replay segments, and completion rates. Essential for content optimization.",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "entry_id": {
                         "type": "string",
-                        "description": "Optional media entry ID for specific entry analytics. If omitted, returns aggregated analytics.",
+                        "description": "Video entry ID (required)",
                     },
                     "from_date": {
                         "type": "string",
-                        "description": "Start date for analytics (YYYY-MM-DD format)",
+                        "description": "Start date (optional, defaults to 30 days ago)",
                     },
                     "to_date": {
                         "type": "string",
-                        "description": "End date for analytics (YYYY-MM-DD format)",
+                        "description": "End date (optional, defaults to today)",
                     },
+                    "user_filter": {
+                        "type": "string",
+                        "description": "Filter by: 'anonymous', 'registered', email, or 'cohort:name'",
+                    },
+                    "compare_segments": {
+                        "type": "boolean",
+                        "description": "Compare filtered segment vs all viewers",
+                    },
+                },
+                "required": ["entry_id"],
+            },
+        ),
+        types.Tool(
+            name="get_realtime_metrics",
+            description="Get real-time analytics updated every ~30 seconds. Perfect for live monitoring, dashboards, and immediate feedback.",
+            inputSchema={
+                "type": "object",
+                "properties": {
                     "report_type": {
                         "type": "string",
-                        "enum": [
-                            # Content Performance
-                            "content",
-                            "content_dropoff",
-                            "content_interactions",
-                            "engagement_timeline",
-                            "content_contributions",
-                            # User Analytics
-                            "user_engagement",
-                            "specific_user_engagement",
-                            "user_top_content",
-                            "user_content_dropoff",
-                            "user_content_interactions",
-                            "user_usage",
-                            "unique_users",
-                            # Geographic
-                            "geographic",
-                            "geographic_country",
-                            "geographic_region",
-                            "geographic_city",
-                            # Platform & Technology
-                            "platforms",
-                            "operating_system",
-                            "operating_system_families",
-                            "browsers",
-                            "browsers_families",
-                            # Creators & Contributors
-                            "contributors",
-                            "creators",
-                            "content_creator",
-                            "content_contributors",
-                            # Distribution
-                            "bandwidth",
-                            "playback_context",
-                            "sources",
-                            # Usage & Infrastructure
-                            "partner_usage",
-                            "storage",
-                            "system",
-                            "vpaas_usage",
-                            "entry_usage",
-                            "cdn_bandwidth",
-                            # Advanced Analytics
-                            "playback_rate",
-                            "player_interactions",
-                            "percentiles",
-                            "interactive_video",
-                            "interactive_nodes",
-                        ],
-                        "description": "Type of analytics report. Key options include: 'content' (top content), 'content_dropoff' (viewer retention), 'engagement_timeline' (timeline heatmap showing most watched/replayed segments), 'user_engagement' (user behavior), 'geographic_*' (location analytics), 'platforms/browsers/operating_system' (technology stats), 'playback_rate' (speed preferences), 'player_interactions' (control usage). See docs for full list. Default: 'content'",
+                        "enum": ["viewers", "geographic", "quality"],
+                        "description": "Type of real-time data (default: 'viewers')",
                     },
-                    "categories": {
+                    "entry_id": {
                         "type": "string",
-                        "description": "Optional category filter (use full category name including parent paths)",
+                        "description": "Optional entry ID for content-specific metrics",
                     },
-                    "limit": {
-                        "type": "integer",
-                        "description": "Maximum number of results to return (default: 20, max: 100)",
+                },
+            },
+        ),
+        types.Tool(
+            name="get_quality_metrics",
+            description="Get Quality of Experience (QoE) metrics for streaming performance. Analyzes buffering, bitrate, errors, and user experience quality.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "from_date": {
+                        "type": "string",
+                        "description": "Start date (YYYY-MM-DD)",
                     },
-                    "metrics": {
-                        "type": "array",
-                        "items": {
-                            "type": "string",
-                            "enum": ["plays", "views", "engagement", "drop_off"],
-                        },
-                        "description": "Metrics to retrieve: plays, views, engagement, drop_off. Used for reference/interpretation.",
+                    "to_date": {
+                        "type": "string",
+                        "description": "End date (YYYY-MM-DD)",
+                    },
+                    "metric_type": {
+                        "type": "string",
+                        "enum": ["overview", "experience", "engagement", "stream", "errors"],
+                        "description": "Type of quality metric (default: 'overview')",
+                    },
+                    "entry_id": {
+                        "type": "string",
+                        "description": "Optional entry ID for content-specific analysis",
+                    },
+                    "dimension": {
+                        "type": "string",
+                        "description": "Optional dimension (e.g., 'device', 'geography')",
                     },
                 },
                 "required": ["from_date", "to_date"],
+            },
+        ),
+        types.Tool(
+            name="get_geographic_breakdown",
+            description="Get analytics broken down by geographic location. Analyze global reach, market penetration, and regional content performance.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "from_date": {
+                        "type": "string",
+                        "description": "Start date (YYYY-MM-DD)",
+                    },
+                    "to_date": {
+                        "type": "string",
+                        "description": "End date (YYYY-MM-DD)",
+                    },
+                    "granularity": {
+                        "type": "string",
+                        "enum": ["world", "country", "region", "city"],
+                        "description": "Geographic detail level (default: 'country')",
+                    },
+                    "region_filter": {
+                        "type": "string",
+                        "description": "Filter for specific region (e.g., 'US' for states)",
+                    },
+                    "metrics": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "Metrics to include",
+                    },
+                },
+                "required": ["from_date", "to_date"],
+            },
+        ),
+        types.Tool(
+            name="list_analytics_capabilities",
+            description="List all available analytics functions and their use cases. Helper to discover analytics capabilities.",
+            inputSchema={
+                "type": "object",
+                "properties": {},
+            },
+        ),
+        types.Tool(
+            name="get_video_timeline_analytics",
+            description="[DEPRECATED - Use get_video_retention instead] Legacy function for video timeline analytics.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "entry_id": {
+                        "type": "string",
+                        "description": "Single video entry ID (required)",
+                    },
+                    "from_date": {
+                        "type": "string",
+                        "description": "Start date (YYYY-MM-DD)",
+                    },
+                    "to_date": {
+                        "type": "string",
+                        "description": "End date (YYYY-MM-DD)",
+                    },
+                    "user_ids": {
+                        "type": "string",
+                        "description": "User filter",
+                    },
+                    "compare_cohorts": {
+                        "type": "boolean",
+                        "description": "Compare cohorts",
+                    },
+                },
+                "required": ["entry_id"],
             },
         ),
         types.Tool(
@@ -354,6 +497,20 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[types.TextCont
             result = await list_categories(kaltura_manager, **arguments)
         elif name == "get_analytics":
             result = await get_analytics(kaltura_manager, **arguments)
+        elif name == "get_analytics_timeseries":
+            result = await get_analytics_timeseries(kaltura_manager, **arguments)
+        elif name == "get_video_retention":
+            result = await get_video_retention(kaltura_manager, **arguments)
+        elif name == "get_realtime_metrics":
+            result = await get_realtime_metrics(kaltura_manager, **arguments)
+        elif name == "get_quality_metrics":
+            result = await get_quality_metrics(kaltura_manager, **arguments)
+        elif name == "get_geographic_breakdown":
+            result = await get_geographic_breakdown(kaltura_manager, **arguments)
+        elif name == "list_analytics_capabilities":
+            result = await list_analytics_capabilities(kaltura_manager, **arguments)
+        elif name == "get_video_timeline_analytics":
+            result = await get_video_timeline_analytics(kaltura_manager, **arguments)
         elif name == "get_download_url":
             result = await get_download_url(kaltura_manager, **arguments)
         elif name == "get_thumbnail_url":

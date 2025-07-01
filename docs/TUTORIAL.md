@@ -82,33 +82,72 @@ Intelligent automation:
 
 ---
 
-### 📊 **Analytics & Insights**
+### 📊 **Analytics & Insights with Visual Dashboards**
 
-#### **"Create a content performance dashboard for our marketing videos"**
+#### **"Create a visual performance dashboard for our marketing videos with daily trends"**
 
 ```
 Claude orchestrates:
-1. Retrieves analytics for all marketing category videos
-2. Analyzes performance trends over time
-3. Correlates video topics with engagement metrics
-4. Identifies top-performing content themes
-5. Generates strategic recommendations for future content
+1. Retrieves graph data for all marketing category videos
+2. Generates time-series charts showing:
+   - Daily play counts and unique viewers
+   - Average watch time trends
+   - Engagement rate fluctuations
+3. Creates visualization-ready data for Chart.js or Plotly
+4. Identifies peak performance periods and anomalies
+5. Suggests optimal posting times based on historical patterns
 ```
 
-**Magic Moment**: Turn raw analytics into strategic insights with natural language.
+**Magic Moment**: Transform raw analytics into interactive visual dashboards with natural language.
 
-#### **"Find our most engaging educational content and explain why it works"**
+#### **"Show me viewer engagement trends for our product demos over the last quarter"**
 
 ```
-Deep analysis workflow:
+Visualization workflow:
+- Fetches daily graph data for Q4 product demos
+- Returns formatted time-series data:
+  {
+    "graphs": [
+      {"metric": "count_plays", "data": [{"date": "2024-01-01", "value": 150}, ...]},
+      {"metric": "avg_completion_rate", "data": [{"date": "2024-01-01", "value": 0.75}, ...]}
+    ]
+  }
+- Highlights engagement patterns and seasonal trends
+- Provides data ready for immediate charting
+```
+
+**Real Impact**: Interactive dashboards that update with real-time data.
+
+#### **"Find our most engaging educational content and visualize performance patterns"**
+
+```
+Deep analysis with visualization:
 - Identifies highest-performing educational videos
-- Analyzes transcript content for engagement patterns
-- Correlates viewer behavior with content structure
-- Extracts successful storytelling techniques
-- Provides actionable content creation guidelines
+- Generates engagement timeline graphs showing:
+  * Where viewers drop off vs. stay engaged
+  * Peak interest moments throughout videos
+  * Completion rate curves
+- Correlates content segments with engagement spikes
+- Creates visual heatmaps of viewer attention
+- Provides data for creating engagement dashboards
 ```
 
-**Real Impact**: Evidence-based content strategy development.
+**Real Impact**: Visual evidence-based content strategy with clear performance indicators.
+
+#### **"Compare weekly performance of our training videos vs. product demos"**
+
+```
+Comparative visualization:
+- Retrieves weekly graph data for both content types
+- Returns multi-series comparison data:
+  * Training videos: plays, completion rates, watch time
+  * Product demos: plays, completion rates, watch time
+- Formats data for side-by-side chart comparison
+- Identifies which content type drives better engagement
+- Suggests resource allocation based on visual trends
+```
+
+**Visualization Output**: Ready-to-chart data comparing content performance over time.
 
 ---
 
@@ -198,43 +237,291 @@ Step 5: Report Creation
 
 **Result**: Comprehensive business intelligence from video content in minutes.
 
-### **Content Lifecycle Management**
+### **Content Lifecycle Management with Visual Analytics**
 
-**Scenario**: *"Audit and optimize our entire video content strategy"*
+**Scenario**: *"Audit and optimize our entire video content strategy with visual performance tracking"*
 
 ```markdown
-Phase 1: Content Inventory
-"List all videos with metadata, categorization, and performance metrics"
+Phase 1: Content Inventory with Trends
+"List all videos and generate 30-day performance trend graphs for each category"
 
-Phase 2: Performance Analysis
-"Identify top and bottom performers across categories"
+Phase 2: Visual Performance Analysis
+"Create time-series charts showing:
+ - Category performance over time
+ - Viewer engagement patterns by content type
+ - Upload frequency vs. engagement correlation"
 
-Phase 3: Content Gaps
-"Analyze transcript themes to identify missing content areas"
+Phase 3: Content Gap Visualization
+"Generate graphs showing:
+ - Topics with high search but low content
+ - Engagement drops indicating missing follow-up content
+ - Viewer journey visualization across content series"
 
-Phase 4: Optimization Recommendations
-"Suggest content updates, reorganization, and new content priorities"
+Phase 4: Optimization Dashboard
+"Create interactive dashboard data showing:
+ - Content performance heatmaps
+ - Optimal video length by category (graph data)
+ - Best performing times and days (visual trends)"
 
-Phase 5: Action Planning
-"Create implementation roadmap with specific next steps"
+Phase 5: Predictive Planning
+"Generate forecast graphs based on historical trends"
 ```
 
-**Result**: Strategic video content transformation with data-driven decisions.
+**Result**: Visual content strategy with interactive dashboards and trend analysis.
 
-### **Automated Content Workflows**
+### **Automated Content Workflows with Visual Reporting**
 
-**Scenario**: *"Set up intelligent content monitoring and alerts"*
+**Scenario**: *"Set up intelligent content monitoring with visual weekly reports"*
 
 ```markdown
-Weekly Intelligence Briefing:
+Weekly Visual Intelligence Briefing:
 1. "Find all new videos uploaded this week"
-2. "Analyze engagement trends vs. previous weeks"
-3. "Identify trending topics in video content"
-4. "Flag videos needing attention (low engagement, missing metadata)"
-5. "Generate weekly content performance report"
+2. "Generate comparison graphs:
+   - This week vs. last week performance
+   - 4-week rolling average trends
+   - Day-by-day engagement patterns"
+3. "Create trend visualizations:
+   - Rising topics (upward trending graphs)
+   - Declining topics (downward trends)
+   - Seasonal patterns in engagement"
+4. "Visual alerts dashboard:
+   - Red flag videos (steep engagement drops)
+   - Green flag videos (exceptional performance)
+   - Videos trending toward low engagement"
+5. "Generate visual weekly report with:
+   - Performance charts by category
+   - Engagement timeline graphs
+   - Predictive trend lines for next week"
 ```
 
-**Result**: Proactive content management with automated insights.
+**Result**: Visual content monitoring with trend-based predictive insights.
+
+---
+
+## 🚀 **NEW: Purpose-Based Analytics Functions (V2)**
+
+### **Find the Right Analytics Tool Without Technical Knowledge**
+
+The new Analytics V2 provides intuitive, purpose-driven functions that make it easy to get exactly the analytics you need:
+
+#### **"I need to create a dashboard with charts"**
+```
+Use: get_analytics_timeseries()
+- Returns chart-ready data with consistent time intervals
+- Multiple metrics in one call
+- Direct integration with Chart.js, Plotly, D3.js
+```
+
+#### **"Show me where viewers stop watching"**
+```
+Use: get_video_retention()
+- 101-point retention curve for any video
+- Automatic drop-off and replay detection
+- Compare different viewer segments
+```
+
+#### **"Monitor our live event in real-time"**
+```
+Use: get_realtime_metrics()
+- Updates every ~30 seconds
+- Current viewers, geographic distribution, quality
+- Includes trends and peak detection
+```
+
+#### **"Analyze streaming quality issues"**
+```
+Use: get_quality_metrics()
+- Buffering rates, bitrate analysis, error tracking
+- Quality score and recommendations
+- Device and geographic breakdowns
+```
+
+#### **"Understand our global audience"**
+```
+Use: get_geographic_breakdown()
+- Country, state, or city-level analysis
+- Automatic percentage calculations
+- Top locations and growth insights
+```
+
+#### **"What analytics tools are available?"**
+```
+Use: list_analytics_capabilities()
+- Discover all functions and their purposes
+- See examples and use cases
+- Find the right tool for your needs
+```
+
+**Example Workflow**: Building a Complete Video Analytics Dashboard
+```
+1. "List analytics capabilities" → Discover available functions
+2. "Get performance rankings for last month" → get_analytics()
+3. "Create daily play count chart" → get_analytics_timeseries()
+4. "Analyze retention for top video" → get_video_retention()
+5. "Check current live viewers" → get_realtime_metrics()
+6. "Show geographic distribution" → get_geographic_breakdown()
+```
+
+**Migration Tip**: All old functions still work! New functions provide clearer naming and enhanced features. See the [Analytics V2 Guide](ANALYTICS_V2_GUIDE.md) for details.
+
+---
+
+## 📈 **Visual Analytics & Graph Data Capabilities**
+
+### **Transform Analytics into Visual Stories**
+
+The Kaltura MCP now provides powerful graph data capabilities that transform raw analytics into visualization-ready time-series data. Here's how to leverage this for impactful insights:
+
+### **Video Timeline Analytics - Granular Retention Analysis**
+
+#### **"Show me exactly where viewers drop off in my training video"**
+
+```
+Video Timeline Analytics (PERCENTILES):
+1. Request: "Analyze retention for video 1_abc123"
+2. Returns 101 data points (0-100% of video duration):
+   - Exact viewer count at each percentile
+   - Unique vs. repeat viewers
+   - Replay hotspots identification
+3. Insights generated:
+   - Major drop-off points (e.g., "25% mark: 15% viewer loss")
+   - Replay segments (e.g., "45% mark: 35% replay rate")
+   - Average retention and completion rates
+```
+
+**Example prompt**: *"Get the retention curve for our product demo and identify where we lose viewers"*
+
+#### **"Compare how anonymous vs logged-in users watch our content"**
+
+```
+Cohort Comparison Workflow:
+- "Show retention curves comparing anonymous and registered viewers for video 1_xyz"
+- Returns:
+  * Anonymous viewer retention curve
+  * Logged-in user retention curve
+  * Behavioral differences highlighted
+  * Engagement score comparison
+```
+
+**Insight**: Discover if your content resonates differently with authenticated users.
+
+#### **"Find which parts of my tutorial get replayed the most"**
+
+```
+Replay Detection Analysis:
+- "Identify replay hotspots in video 1_tutorial"
+- Returns percentile-by-percentile replay data:
+  * Segments with >20% replay rate flagged
+  * Exact replay counts per segment
+  * Suggestions for content optimization
+```
+
+**Use case**: Extract high-value segments for promotional clips or improve confusing sections.
+
+#### **"Create an engagement dashboard for our webinar series"**
+
+```
+Graph data workflow:
+1. Request: "Get graph data for all webinars from the last 3 months"
+2. Receive time-series data with multiple metrics:
+   - Daily play counts
+   - Average watch time trends
+   - Completion rate patterns
+   - Unique viewer growth
+3. Data formatted for immediate visualization in:
+   - Chart.js (web dashboards)
+   - Plotly (interactive graphs)
+   - D3.js (custom visualizations)
+   - Excel/Google Sheets (business reports)
+```
+
+**Example prompt**: *"Generate daily engagement graphs for our 'Tech Talks' series showing plays, completion rates, and average watch time"*
+
+#### **"Visualize content performance patterns to optimize upload schedule"**
+
+```
+Pattern recognition through graphs:
+- "Show me hourly viewing patterns for weekdays vs weekends"
+- Returns graph data revealing:
+  * Peak viewing hours by day
+  * Engagement differences between content types
+  * Optimal upload windows
+- Creates data for heat map visualizations
+- Identifies untapped time slots
+```
+
+**Visual insight**: See exactly when your audience is most engaged, not just aggregate numbers.
+
+#### **"Track campaign effectiveness with visual trend analysis"**
+
+```
+Campaign tracking workflow:
+1. "Get daily graph data for videos tagged 'summer-campaign'"
+2. Receive multi-metric time series:
+   {
+     "graphs": [
+       {"metric": "count_plays", "data": [...]},
+       {"metric": "unique_viewers", "data": [...]},
+       {"metric": "social_shares", "data": [...]}
+     ],
+     "summary": {"total_reach": 50000, "engagement_rate": 0.45}
+   }
+3. Track campaign momentum visually
+4. Identify viral moments and plateau periods
+5. Adjust strategy based on real-time trends
+```
+
+**Power move**: Real-time campaign optimization through visual trend monitoring.
+
+### **Graph Data Prompt Examples**
+
+#### **Performance Tracking**
+- *"Graph our video performance metrics for the last 30 days with daily intervals"*
+- *"Show me weekly trends for our educational content vs entertainment content"*
+- *"Visualize the correlation between video length and completion rates"*
+
+#### **Video Timeline & Retention Analysis**
+- *"Show me the retention curve for video 1_abc123"*
+- *"Analyze where viewers drop off in our onboarding video"*
+- *"Find the exact points where people replay content in video 1_xyz"*
+- *"Compare retention patterns between mobile and desktop viewers"*
+- *"Identify which segments of our tutorial have the highest engagement"*
+
+#### **Cohort Comparison**
+- *"Compare retention curves: premium users vs free users for video 1_demo"*
+- *"Show how first-time viewers vs returning viewers watch our content"*
+- *"Analyze viewing patterns: employees vs external users"*
+- *"Compare anonymous viewer retention to logged-in users"*
+
+#### **Content Optimization**
+- *"Find the optimal video length based on retention data"*
+- *"Identify segments to cut based on drop-off analysis"*
+- *"Show me which intro length has the best retention"*
+- *"Analyze if our CTAs are causing viewer drop-off"*
+
+#### **Predictive Analytics**
+- *"Based on historical graphs, predict next month's viewing patterns"*
+- *"Show me seasonal trends in our video consumption over 2 years"*
+- *"Identify growth trajectories for different content types"*
+
+#### **Real-time Monitoring**
+- *"Get live viewer count graphs for our ongoing webinar"*
+- *"Show me real-time engagement metrics for today's product launch video"*
+- *"Track concurrent viewers throughout our live event"*
+
+### **Creating Visual Reports**
+
+```
+Executive Dashboard Prompt:
+"Create a comprehensive visual analytics report for Q1:
+1. Monthly trend graphs for all key metrics
+2. Category performance comparison charts
+3. Geographic distribution over time
+4. Content ROI visualization
+5. Predictive trends for Q2"
+
+Returns: Complete dataset formatted for executive dashboards
+```
 
 ---
 
@@ -266,18 +553,30 @@ Knowledge graph creation:
 - Suggests content connections and pathways
 ```
 
-### **Predictive Content Planning**
+### **Predictive Content Planning with Visual Forecasting**
 
-**"Predict what video content will perform best next quarter"**
+**"Predict what video content will perform best next quarter with visual trend analysis"**
 
 ```
-Trend analysis and prediction:
-- Analyzes historical performance patterns
-- Identifies seasonal content trends
-- Correlates external events with video engagement
-- Suggests optimal content timing and topics
-- Creates content calendar recommendations
+Visual trend analysis and prediction:
+- Generates historical performance graphs by content type
+- Creates seasonal trend visualizations:
+  * Year-over-year comparison charts
+  * Monthly pattern recognition graphs
+  * Holiday impact on engagement metrics
+- Produces predictive charts showing:
+  * Expected performance curves for Q2
+  * Optimal upload timing graphs
+  * Content mix recommendations with projected ROI
+- Delivers forecast data formatted for dashboards:
+  {
+    "historical_trends": {"Q1_2023": [...], "Q1_2024": [...]},
+    "predictions": {"Q2_2024": [{"date": "2024-04-01", "predicted_plays": 250}, ...]},
+    "confidence_bands": {"upper": [...], "lower": [...]}
+  }
 ```
+
+**Visual Output**: Interactive forecast dashboards with confidence intervals.
 
 ---
 
@@ -302,20 +601,31 @@ Trend analysis and prediction:
 
 ## 💡 **Pro Tips for Maximum Impact**
 
-### **🎯 Precision Querying**
-- **Specific dates**: *"Find videos from the last 30 days with 'product launch' in captions"*
-- **Performance metrics**: *"Show me videos with >80% completion rate in the training category"*
-- **Content analysis**: *"Extract action items from all leadership meeting recordings"*
+### **🎯 Precision Querying with Visualization**
+- **Time-series analysis**: *"Show me daily play count trends for videos uploaded in the last 30 days"*
+- **Performance visualization**: *"Graph the completion rates over time for our training videos"*
+- **Engagement patterns**: *"Visualize hourly viewing patterns for our live event recordings"*
+- **Comparative charts**: *"Create a graph comparing viewer retention across our top 5 videos"*
+- **Geographic trends**: *"Show me a time-series of views by country for our global campaign"*
 
 ### **🔗 Workflow Chaining**
 - Start broad, then narrow: *Discovery → Analysis → Action*
 - Build on results: Use previous findings to guide next queries
 - Create feedback loops: *Performance → Insights → Strategy → Content → Performance*
 
-### **📊 Data-Driven Decisions**
-- Always ask for metrics alongside content analysis
-- Request trending information over time periods
-- Combine quantitative analytics with qualitative content insights
+### **📊 Visual Data-Driven Decisions**
+- **Request graph data**: *"Give me graph data for daily engagement over the last month"*
+- **Visualize trends**: *"Show me viewer count trends with weekly intervals"*
+- **Multi-metric charts**: *"Graph plays, completion rate, and average watch time together"*
+- **Pattern recognition**: *"Visualize engagement patterns to identify peak viewing times"*
+- **Dashboard creation**: *"Generate dashboard-ready data for our monthly review"*
+
+### **📈 Example Graph Data Prompts**
+- **Performance Dashboard**: *"Create graph data for a performance dashboard showing daily metrics for our educational content"*
+- **Trend Analysis**: *"Generate time-series data showing monthly growth in viewer engagement"*
+- **A/B Testing**: *"Compare graph data for videos with different thumbnail styles"*
+- **ROI Visualization**: *"Show me the correlation between video length and completion rates as a graph"*
+- **Real-time Monitoring**: *"Get real-time viewer data for our live stream in graph format"*
 
 ### **🎬 Content Intelligence**
 - Leverage transcript analysis for deeper insights
@@ -337,7 +647,9 @@ Trend analysis and prediction:
 - ✨ **Instant intelligent video discovery**
 - 🔍 **AI-powered content analysis and insights**
 - ⚡ **Automated video intelligence workflows**
-- 📊 **Data-driven content strategy**
+- 📊 **Visual analytics with interactive dashboards**
+- 📈 **Time-series data for trend visualization**
+- 🎯 **Graph-based performance tracking**
 - 🧠 **Unified video knowledge base**
 
 ---

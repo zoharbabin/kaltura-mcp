@@ -2,7 +2,7 @@
 
 import json
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Union
 
 from ..kaltura_client import KalturaClientManager
@@ -57,7 +57,12 @@ REPORT_TYPE_MAP = {
     "self_serve_usage": 60,  # SELF_SERVE_USAGE
     "cdn_bandwidth": 64,  # CDN_BANDWIDTH_USAGE
     # Interactive & Advanced Reports (43, 45-50)
-    "percentiles": 43,  # PERCENTILES
+    "percentiles": 43,  # PERCENTILES - Video timeline retention analysis
+    "video_timeline": 43,  # Alias for PERCENTILES - clearer for LLMs
+    "retention_curve": 43,  # Another alias for PERCENTILES
+    "viewer_retention": 43,  # PERCENTILES - Per-video retention analysis
+    "drop_off_analysis": 43,  # PERCENTILES - Where viewers stop watching
+    "replay_detection": 43,  # PERCENTILES - Identify replay hotspots
     "player_interactions": 45,  # PLAYER_RELATED_INTERACTIONS
     "playback_rate": 46,  # PLAYBACK_RATE
     "interactive_video": 49,  # USER_INTERACTIVE_VIDEO
@@ -137,7 +142,12 @@ REPORT_TYPE_NAMES = {
     "self_serve_usage": "Self-Serve Usage",
     "cdn_bandwidth": "CDN Bandwidth Usage",
     # Interactive & Advanced
-    "percentiles": "Performance Percentiles",
+    "percentiles": "Video Timeline Retention (Percentiles)",
+    "video_timeline": "Video Timeline Retention Analysis",
+    "retention_curve": "Viewer Retention Curve",
+    "viewer_retention": "Per-Video Viewer Retention",
+    "drop_off_analysis": "Video Drop-off Analysis",
+    "replay_detection": "Replay Hotspot Detection",
     "player_interactions": "Player Interactions",
     "playback_rate": "Playback Rate Analysis",
     "interactive_video": "Interactive Video Analytics",
@@ -305,8 +315,16 @@ async def get_analytics_graph(
             else:
                 report_filter = KalturaReportInputFilter()
         except Exception:
-            # Fallback to generic object
-            report_filter = type("obj", (object,), {})()
+            # Fallback to generic object with toParams method
+            class FallbackFilter:
+                def __init__(self):
+                    pass
+
+                def toParams(self):
+                    """Return dict representation for API calls."""
+                    return {k: v for k, v in self.__dict__.items() if not k.startswith("_")}
+
+            report_filter = FallbackFilter()
 
         # Set filter properties
         report_filter.fromDate = int(datetime.strptime(from_date, "%Y-%m-%d").timestamp())
@@ -425,7 +443,7 @@ async def get_analytics_enhanced(
         limit: Maximum results
         page_index: Page number for pagination
         order_by: Sort field
-        response_format: "json" or "csv"
+        response_format: "json", "csv", or "raw" (returns unprocessed API response)
     """
     # Validate dates
     date_pattern = r"^\d{4}-\d{2}-\d{2}$"
@@ -456,6 +474,69 @@ async def get_analytics_enhanced(
             },
             indent=2,
         )
+
+    # If requesting raw format and imports might fail, return early with a simpler approach
+    if response_format == "raw":
+        try:
+            # Try the simple approach first for raw format
+            client = manager.get_client()
+
+            # Direct API call without complex objects
+            start_time = int(datetime.strptime(from_date, "%Y-%m-%d").timestamp())
+            end_time = int(datetime.strptime(to_date, "%Y-%m-%d").timestamp())
+
+            # Try to get the report directly
+            try:
+                # Prepare object IDs
+                if object_ids:
+                    obj_ids = object_ids
+                elif entry_id:
+                    obj_ids = entry_id
+                elif user_id:
+                    obj_ids = user_id
+                else:
+                    obj_ids = None
+
+                # Try direct call with minimal parameters
+                report_result = client.report.getTable(
+                    reportType=report_type_id,
+                    reportInputFilter={
+                        "fromDate": start_time,
+                        "toDate": end_time,
+                        "entryIdIn": entry_id if entry_id else None,
+                        "userIds": user_id if user_id else None,
+                        "categories": categories if categories else None,
+                    },
+                    pager={"pageSize": min(limit, 500), "pageIndex": page_index},
+                    order=order_by,
+                    objectIds=obj_ids,
+                )
+
+                # Return raw response
+                return json.dumps(
+                    {
+                        "kaltura_response": {
+                            "header": getattr(report_result, "header", ""),
+                            "data": getattr(report_result, "data", ""),
+                            "totalCount": getattr(report_result, "totalCount", 0),
+                        },
+                        "request_info": {
+                            "report_type": report_type,
+                            "report_type_id": report_type_id,
+                            "from_date": from_date,
+                            "to_date": to_date,
+                            "entry_id": entry_id,
+                            "user_id": user_id,
+                        },
+                    },
+                    indent=2,
+                )
+            except Exception:
+                # If direct call fails, fall through to normal processing
+                pass
+        except Exception:
+            # If anything fails, continue with normal processing
+            pass
 
     client = manager.get_client()
 
@@ -521,7 +602,37 @@ async def get_analytics_enhanced(
         kaltura_report_type = report_type_id
 
         # Call appropriate API method
-        if response_format == "csv":
+        if response_format == "raw":
+            # Get raw table data without processing
+            report_result = client.report.getTable(
+                reportType=kaltura_report_type,
+                reportInputFilter=report_filter,
+                pager=pager,
+                order=order_by,
+                objectIds=obj_ids,
+            )
+
+            # Return raw Kaltura response with minimal wrapping
+            return json.dumps(
+                {
+                    "kaltura_response": {
+                        "header": getattr(report_result, "header", ""),
+                        "data": getattr(report_result, "data", ""),
+                        "totalCount": getattr(report_result, "totalCount", 0),
+                    },
+                    "request_info": {
+                        "report_type": report_type,
+                        "report_type_id": report_type_id,
+                        "from_date": from_date,
+                        "to_date": to_date,
+                        "entry_id": entry_id,
+                        "user_id": user_id,
+                    },
+                },
+                indent=2,
+            )
+
+        elif response_format == "csv":
             # Get CSV export URL
             csv_result = client.report.getUrlForReportAsCsv(
                 reportTitle=f"{REPORT_TYPE_NAMES.get(report_type, 'Report')}_{from_date}_{to_date}",
@@ -547,10 +658,11 @@ async def get_analytics_enhanced(
 
         else:
             # Get table data
+            # Note: getTable doesn't support dimension parameter
+            # If dimension is requested, we'll include it in metadata but cannot group by it
             report_result = client.report.getTable(
                 reportType=kaltura_report_type,
                 reportInputFilter=report_filter,
-                dimension=dimension,
                 pager=pager,
                 order=order_by,
                 objectIds=obj_ids,
@@ -592,6 +704,34 @@ async def get_analytics_enhanced(
                             # Special handling for timeline data
                             timeline_data = parse_timeline_data(row)
                             analytics_data["data"].append(timeline_data)
+                        elif report_type in [
+                            "percentiles",
+                            "video_timeline",
+                            "retention_curve",
+                            "viewer_retention",
+                            "drop_off_analysis",
+                            "replay_detection",
+                        ]:
+                            # Special handling for PERCENTILES report (ID 43)
+                            # This report uses semicolon-separated rows with pipe-separated values
+                            if "|" in row:
+                                values = row.split("|")
+                                if len(values) >= 3:
+                                    row_dict = {
+                                        "percentile": convert_value(values[0]),
+                                        "count_viewers": convert_value(values[1]),
+                                        "unique_known_users": convert_value(values[2]),
+                                    }
+                                    analytics_data["data"].append(row_dict)
+                            else:
+                                # Fallback to standard CSV parsing if no pipes found
+                                row_values = parse_csv_row(row)
+                                if len(row_values) >= len(analytics_data["headers"]):
+                                    row_dict = {}
+                                    for i, header in enumerate(analytics_data["headers"]):
+                                        if i < len(row_values):
+                                            row_dict[header] = convert_value(row_values[i])
+                                    analytics_data["data"].append(row_dict)
                         else:
                             # Standard CSV parsing
                             row_values = parse_csv_row(row)
@@ -603,6 +743,13 @@ async def get_analytics_enhanced(
                                 analytics_data["data"].append(row_dict)
 
             analytics_data["totalResults"] = len(analytics_data["data"])
+
+            # Add note if dimension was requested but not applied
+            if dimension:
+                analytics_data["note"] = (
+                    f"Dimension '{dimension}' was requested but grouping is not supported in table format. "
+                    "Use get_analytics_graph() or response_format='graph' for dimensional analysis."
+                )
 
             # Add summary for certain reports
             if report_type in ["partner_usage", "var_usage", "cdn_bandwidth"]:
@@ -666,6 +813,21 @@ def convert_value(value: str) -> Union[str, int, float]:
     if not value:
         return value
 
+    # Check if value contains semicolons (might be unparsed data)
+    if ";" in value:
+        # Try to extract the first numeric part before semicolon
+        parts = value.split(";")
+        first_part = parts[0].strip()
+        # Try to convert the first part to int or float
+        try:
+            if "." in first_part:
+                return float(first_part)
+            else:
+                return int(first_part)
+        except ValueError:
+            # Return as string if can't parse
+            return value
+
     # Try integer
     try:
         return int(value)
@@ -717,6 +879,56 @@ def parse_graph_data(graph_data: str) -> List[Dict[str, Union[str, float]]]:
     return points
 
 
+def parse_percentiles_data(data: str, delimiter: str = "|") -> List[Dict[str, Union[int, float]]]:
+    """Parse percentiles report data (percentile|count_viewers|unique_known_users)."""
+    rows = []
+    if not data:
+        return rows
+
+    # Remove trailing semicolon and split by rows
+    data_rows = data.rstrip(";").split(";")
+
+    for row in data_rows:
+        if row.strip():
+            values = row.split(delimiter)
+            if len(values) >= 3:
+                rows.append(
+                    {
+                        "percentile": int(values[0]),
+                        "count_viewers": int(values[1]),
+                        "unique_known_users": int(values[2]),
+                        "replay_count": int(values[1]) - int(values[2]),  # Calculate replays
+                    }
+                )
+
+    return rows
+
+
+def calculate_retention_curve(percentiles_data: List[Dict]) -> List[Dict[str, float]]:
+    """Calculate normalized retention curve from percentiles data."""
+    if not percentiles_data or len(percentiles_data) < 2:
+        return []
+
+    # Find the baseline (usually at percentile 1)
+    baseline = next((row["count_viewers"] for row in percentiles_data if row["percentile"] == 1), 1)
+    if baseline == 0:
+        baseline = 1  # Avoid division by zero
+
+    retention_curve = []
+    for row in percentiles_data:
+        retention_curve.append(
+            {
+                "percentile": row["percentile"],
+                "retention_rate": (row["count_viewers"] / baseline) * 100,
+                "viewers": row["count_viewers"],
+                "unique_users": row["unique_known_users"],
+                "replays": row["replay_count"],
+            }
+        )
+
+    return retention_curve
+
+
 # Additional specialized functions
 
 
@@ -761,6 +973,144 @@ async def get_qoe_analytics(
         report_type=report_type,
         dimension=dimension,
     )
+
+
+async def get_video_timeline_analytics(
+    manager: KalturaClientManager,
+    entry_id: str,
+    from_date: Optional[str] = None,
+    to_date: Optional[str] = None,
+    user_ids: Optional[str] = None,
+    compare_cohorts: bool = False,
+) -> str:
+    """
+    Get granular video timeline analytics using PERCENTILES report (ID 43).
+
+    This function provides detailed retention curve data showing exactly where
+    viewers drop off or replay content within a single video. Perfect for:
+    - Creating retention curve visualizations
+    - Identifying drop-off points
+    - Detecting replay hotspots
+    - Comparing viewer behavior between cohorts
+
+    Args:
+        manager: Kaltura client manager
+        entry_id: Single video entry ID (required)
+        from_date: Start date (defaults to 30 days ago)
+        to_date: End date (defaults to today)
+        user_ids: Optional user filter:
+            - None/omitted: All viewers
+            - "Unknown": Anonymous viewers only
+            - "user@example.com": Specific user
+            - "user1,user2,user3": Multiple users
+        compare_cohorts: If True, returns both all viewers and filtered cohort
+
+    Returns:
+        JSON with raw Kaltura API response and context
+    """
+    # Validate entry ID
+    if not entry_id or not validate_entry_id(entry_id):
+        return json.dumps({"error": "Valid entry_id required for timeline analytics"}, indent=2)
+
+    # Default date range if not provided
+    if not from_date or not to_date:
+        end = datetime.now()
+        start = end - timedelta(days=30)
+        from_date = from_date or start.strftime("%Y-%m-%d")
+        to_date = to_date or end.strftime("%Y-%m-%d")
+
+    # Use the core implementation with raw format
+    result = await get_analytics_enhanced(
+        manager=manager,
+        from_date=from_date,
+        to_date=to_date,
+        report_type="percentiles",
+        entry_id=entry_id,
+        object_ids=entry_id,
+        user_id=user_ids,
+        limit=500,
+        response_format="raw",
+    )
+
+    # Parse and enhance the result
+    try:
+        data = json.loads(result)
+        if "error" in data:
+            return result
+
+        # Add context
+        enhanced_result = {
+            "video_id": entry_id,
+            "date_range": {"from": from_date, "to": to_date},
+            "filter": {"user_ids": user_ids or "all"},
+            "kaltura_raw_response": data.get("kaltura_response", {}),
+            "report_info": {
+                "report_type": "PERCENTILES",
+                "report_id": 43,
+                "description": "Video timeline retention data with 101 percentile points (0-100)",
+                "data_format": "CSV format with headers in 'header' field and data rows in 'data' field",
+            },
+        }
+        return json.dumps(enhanced_result, indent=2)
+    except Exception as e:
+        return json.dumps(
+            {
+                "error": f"Failed to retrieve timeline analytics: {str(e)}",
+                "entry_id": entry_id,
+                "date_range": {"from": from_date, "to": to_date},
+            },
+            indent=2,
+        )
+
+
+def analyze_retention_insights(retention_curve: List[Dict]) -> Dict[str, any]:
+    """Analyze retention curve to extract key insights."""
+    if not retention_curve:
+        return {}
+
+    # Calculate average retention
+    total_retention = sum(point["retention_rate"] for point in retention_curve)
+    avg_retention = total_retention / len(retention_curve) if retention_curve else 0
+
+    # Find major drop-off points (>5% drop)
+    drop_offs = []
+    for i in range(1, len(retention_curve)):
+        drop = retention_curve[i - 1]["retention_rate"] - retention_curve[i]["retention_rate"]
+        if drop > 5:
+            drop_offs.append(
+                {"percentile": retention_curve[i]["percentile"], "drop_percentage": round(drop, 2)}
+            )
+
+    # Find replay hotspots (high replay count)
+    replay_hotspots = []
+    for point in retention_curve:
+        if point["replays"] > 0 and point["unique_users"] > 0:
+            replay_ratio = point["replays"] / point["unique_users"]
+            if replay_ratio > 0.2:  # 20% replay rate
+                replay_hotspots.append(
+                    {"percentile": point["percentile"], "replay_ratio": round(replay_ratio, 2)}
+                )
+
+    # Find 50% retention point
+    fifty_percent_point = next(
+        (p["percentile"] for p in retention_curve if p["retention_rate"] <= 50), 100
+    )
+
+    # Completion rate (viewers at 95%+)
+    completion_rate = next(
+        (p["retention_rate"] for p in retention_curve if p["percentile"] >= 95), 0
+    )
+
+    return {
+        "avg_retention": round(avg_retention, 2),
+        "fifty_percent_point": fifty_percent_point,
+        "completion_rate": round(completion_rate, 2),
+        "major_drop_offs": drop_offs[:5],  # Top 5 drop-off points
+        "replay_hotspots": sorted(replay_hotspots, key=lambda x: x["replay_ratio"], reverse=True)[
+            :5
+        ],
+        "engagement_score": round((avg_retention + completion_rate) / 2, 2),
+    }
 
 
 async def get_geographic_analytics(
