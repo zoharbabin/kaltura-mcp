@@ -71,3 +71,8 @@ target-version = "py310"
 [tool.ruff.lint]
 select = ["E", "W", "F", "I"]  # pycodestyle + pyflakes + isort
 ignore = ["E501"]  # line too long (handled by black)
+
+[tool.pytest.ini_options]
+markers = [
+    "integration: marks tests as integration tests (deselect with '-m \"not integration\"')",
+]

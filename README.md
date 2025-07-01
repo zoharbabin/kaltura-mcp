@@ -237,6 +237,60 @@ The remote server provides:
 10. **get_attachment_content** - Get attachment content details and download content as base64
     - Parameters: attachment_asset_id (required)
 
+### Prompts
+
+The server provides intelligent prompts to guide users through complex workflows:
+
+1. **analytics_wizard** - Interactive guide for creating comprehensive analytics reports
+   ```
+   Arguments:
+   - analysis_goal: What to analyze (e.g., "video performance", "viewer engagement", "geographic reach")
+   - time_period: Time range (e.g., "today", "yesterday", "last_week", "last_month")
+   ```
+
+2. **content_discovery** - Natural language search assistant for finding media
+   ```
+   Arguments:
+   - search_intent: What you're looking for in natural language
+   - include_details: Whether to fetch captions/attachments (yes/no)
+   ```
+
+3. **accessibility_audit** - Content accessibility compliance checker
+   ```
+   Arguments:
+   - audit_scope: What to audit ("all", "recent", "category:name", or entry_id)
+   ```
+
+4. **retention_analysis** - Create comprehensive retention analysis report
+   ```
+   Arguments:
+   - entry_id: Video to analyze (e.g., "1_3atosphg") [required]
+   - time_period: Months of data to analyze (default: "12")
+   - output_format: "interactive" (HTML) or "markdown" (default: "interactive")
+   ```
+
+### Resources
+
+The server exposes frequently-used data as cached resources:
+
+1. **kaltura://analytics/capabilities** - Complete analytics documentation
+   - All 60+ report types with descriptions
+   - Available metrics and dimensions
+   - Best practices for different use cases
+   - Cached for 30 minutes
+
+2. **kaltura://categories/tree** - Category hierarchy with entry counts
+   - Complete category tree structure
+   - Entry counts per category
+   - Parent-child relationships
+   - Cached for 30 minutes
+
+3. **kaltura://media/recent/{count}** - Recent media entries
+   - Replace {count} with number of entries (e.g., kaltura://media/recent/20)
+   - Maximum 100 entries
+   - Includes basic metadata
+   - Cached for 5 minutes
+
 ---
 
 ## Remote MCP Server (Advanced)
@@ -456,6 +510,12 @@ Multiple Clients ←→ Load Balancer ←→ Multiple MCP Servers ←→ Kaltura
                                           ↓
                                     Redis/Database
 ```
+
+## Documentation
+
+- [Analytics Guide](docs/KALTURA_ANALYTICS_GUIDE.md) - Comprehensive guide to analytics features
+- [Prompts and Resources](docs/PROMPTS_AND_RESOURCES.md) - Detailed documentation of MCP prompts and resources
+- [API Documentation](https://developer.kaltura.com/) - Official Kaltura API documentation
 
 ## Development
 
