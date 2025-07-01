@@ -166,14 +166,23 @@ class TestAnalytics:
         result = await get_video_retention(mock_manager, entry_id="1_test")
 
         data = json.loads(result)
-        assert "video_id" in data
-        assert data["video_id"] == "1_test"
-        # Check for response data (could be in different formats)
-        assert "response" in data or "kaltura_raw_response" in data
-        # Get the response data regardless of key name
-        response_data = data.get("response", data.get("kaltura_raw_response", {}))
-        assert response_data.get("header") == "percentile,count_viewers,unique_known_users"
-        assert "0,100,100" in response_data.get("data", "")
+        assert "video" in data
+        assert data["video"]["id"] == "1_test"
+        assert "retention_data" in data
+        assert len(data["retention_data"]) == 2  # Two data points
+
+        # Check first data point
+        first_point = data["retention_data"][0]
+        assert first_point["percentile"] == 0
+        assert first_point["time_seconds"] == 0
+        assert first_point["time_formatted"] == "00:00"
+        assert first_point["viewers"] == 100
+        assert first_point["retention_percentage"] == 100.0
+
+        # Check insights
+        assert "insights" in data
+        assert "average_retention" in data["insights"]
+        assert "major_dropoffs" in data["insights"]
 
     @pytest.mark.asyncio
     async def test_get_video_retention_user_filters(self, mock_manager):
@@ -191,6 +200,8 @@ class TestAnalytics:
 
         data = json.loads(result)
         assert data["filter"]["user_ids"] == "Unknown"
+        assert "video" in data
+        assert "retention_data" in data
 
         # Test specific user filter
         result = await get_video_retention(

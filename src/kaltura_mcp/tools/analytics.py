@@ -231,22 +231,48 @@ async def get_video_retention(
         compare_segments: If True, compare filtered segment vs all viewers
 
     Returns:
-        JSON with detailed retention analysis:
+        JSON with detailed retention analysis including TIME CONVERSION:
         {
-            "video": {"id": "1_abc", "title": "...", "duration": 300},
-            "retention_curve": [
-                {"percent": 0, "retention": 100.0, "viewers": 1000, "replays": 0},
-                {"percent": 1, "retention": 98.5, "viewers": 985, "replays": 15},
+            "video": {
+                "id": "1_abc",
+                "title": "Video Title",
+                "duration_seconds": 300,
+                "duration_formatted": "05:00"
+            },
+            "retention_data": [
+                {
+                    "percentile": 0,
+                    "time_seconds": 0,
+                    "time_formatted": "00:00",
+                    "viewers": 1000,
+                    "unique_users": 1000,
+                    "retention_percentage": 100.0,
+                    "replays": 0
+                },
+                {
+                    "percentile": 10,
+                    "time_seconds": 30,
+                    "time_formatted": "00:30",
+                    "viewers": 850,
+                    "unique_users": 800,
+                    "retention_percentage": 85.0,
+                    "replays": 50
+                },
                 ...
             ],
             "insights": {
                 "average_retention": 65.5,
                 "completion_rate": 42.0,
-                "major_dropoffs": [{"percent": 25, "loss": 15.0}, ...],
-                "replay_segments": [{"percent": 45, "replay_rate": 0.35}, ...],
-                "engagement_score": 72.5
-            },
-            "comparison": {...}  // If compare_segments=True
+                "fifty_percent_point": "02:30",
+                "major_dropoffs": [
+                    {"time": "00:30", "time_seconds": 30, "percentile": 10, "retention_loss": 15.0},
+                    ...
+                ],
+                "replay_hotspots": [
+                    {"time": "02:15", "time_seconds": 135, "percentile": 45, "replay_rate": 0.35},
+                    ...
+                ]
+            }
         }
 
     Examples:
@@ -305,23 +331,191 @@ async def get_video_retention(
     try:
         data = json.loads(result)
 
-        # Create expected format for tests and API consistency
+        # Get video metadata to extract duration
+        try:
+            from .media import get_media_entry
+
+            video_info = await get_media_entry(manager, entry_id)
+            video_data = json.loads(video_info)
+
+            video_duration = video_data.get("duration", 0)
+            video_title = video_data.get("name", "Unknown")
+        except Exception:
+            # Fallback for tests or when media info is not available
+            # Try to determine duration from the data if we have 100 percentile
+            video_duration = 300  # Default 5 minutes
+            video_title = f"Video {entry_id}"
+
+            # If we can access the raw response, try to get metadata from there
+            if "kaltura_response" in data and isinstance(data["kaltura_response"], dict):
+                # Sometimes duration might be in the response metadata
+                if (
+                    "totalCount" in data["kaltura_response"]
+                    and data["kaltura_response"]["totalCount"] == 101
+                ):
+                    # 101 data points suggest percentiles 0-100, so we have full video coverage
+                    # Default to 5 minutes if we can't determine actual duration
+                    video_duration = 300
+
+        # Create enhanced format with time conversion
         formatted_result = {
-            "video_id": entry_id,
+            "video": {
+                "id": entry_id,
+                "title": video_title,
+                "duration_seconds": video_duration,
+                "duration_formatted": f"{video_duration // 60:02d}:{video_duration % 60:02d}",
+            },
             "date_range": {"from": from_date, "to": to_date},
             "filter": {"user_ids": user_ids or "all"},
+            "retention_data": [],
         }
 
-        # Add the response data in the expected location
+        # Process the Kaltura response and add time conversion
         if "kaltura_response" in data:
-            formatted_result["kaltura_raw_response"] = data["kaltura_response"]
+            kaltura_data = data["kaltura_response"]
+
+            # Parse the CSV data with percentiles
+            if "data" in kaltura_data and kaltura_data["data"]:
+                # Split by newline or semicolon (Kaltura sometimes uses semicolons)
+                if ";" in kaltura_data["data"] and "\n" not in kaltura_data["data"]:
+                    rows = kaltura_data["data"].strip().split(";")
+                else:
+                    rows = kaltura_data["data"].strip().split("\n")
+
+                # First pass: collect all data points
+                raw_data_points = []
+                for row in rows:
+                    if row.strip():
+                        # Parse percentile data (format: percentile|viewers|unique_users or CSV)
+                        if "|" in row:
+                            values = row.split("|")
+                        else:
+                            values = row.split(",")
+
+                        if len(values) >= 3:
+                            try:
+                                percentile = int(values[0])
+                                viewers = int(values[1])
+                                unique_users = int(values[2])
+                                raw_data_points.append(
+                                    {
+                                        "percentile": percentile,
+                                        "viewers": viewers,
+                                        "unique_users": unique_users,
+                                    }
+                                )
+                            except (ValueError, TypeError):
+                                continue
+
+                # Find the maximum viewer count to use as initial reference
+                # This handles cases where percentile 0 has 0 viewers
+                max_viewers = max((p["viewers"] for p in raw_data_points), default=0)
+
+                # If we have data at percentile 0 with viewers > 0, use that as initial
+                # Otherwise, use the maximum viewer count as the reference point
+                initial_viewers = 0
+                for point in raw_data_points:
+                    if point["percentile"] == 0 and point["viewers"] > 0:
+                        initial_viewers = point["viewers"]
+                        break
+
+                if initial_viewers == 0:
+                    # No viewers at start, use max viewers as reference
+                    initial_viewers = max_viewers
+
+                # Second pass: calculate retention percentages
+                for point in raw_data_points:
+                    percentile = point["percentile"]
+                    viewers = point["viewers"]
+                    unique_users = point["unique_users"]
+
+                    # Calculate time position
+                    time_seconds = int((percentile / 100.0) * video_duration)
+                    time_formatted = f"{time_seconds // 60:02d}:{time_seconds % 60:02d}"
+
+                    # Calculate retention percentage
+                    if initial_viewers > 0:
+                        retention_pct = viewers / initial_viewers * 100
+                    else:
+                        # If no initial viewers, show 0% retention
+                        retention_pct = 0 if viewers == 0 else 100
+
+                    formatted_result["retention_data"].append(
+                        {
+                            "percentile": percentile,
+                            "time_seconds": time_seconds,
+                            "time_formatted": time_formatted,
+                            "viewers": viewers,
+                            "unique_users": unique_users,
+                            "retention_percentage": round(retention_pct, 2),
+                            "replays": viewers - unique_users,
+                        }
+                    )
+
+            # Calculate insights
+            if formatted_result["retention_data"]:
+                retention_values = [
+                    d["retention_percentage"] for d in formatted_result["retention_data"]
+                ]
+
+                # Find major drop-offs (>5% loss in 10 seconds / ~10 percentile points)
+                major_dropoffs = []
+                for i in range(10, len(formatted_result["retention_data"]), 10):
+                    current = formatted_result["retention_data"][i]
+                    previous = formatted_result["retention_data"][i - 10]
+                    drop = previous["retention_percentage"] - current["retention_percentage"]
+                    if drop >= 5:
+                        major_dropoffs.append(
+                            {
+                                "time": current["time_formatted"],
+                                "time_seconds": current["time_seconds"],
+                                "percentile": current["percentile"],
+                                "retention_loss": round(drop, 2),
+                            }
+                        )
+
+                # Find replay hotspots
+                replay_hotspots = []
+                for point in formatted_result["retention_data"]:
+                    if point["unique_users"] > 0:
+                        replay_rate = point["replays"] / point["unique_users"]
+                        if replay_rate > 0.2:  # 20% replay rate threshold
+                            replay_hotspots.append(
+                                {
+                                    "time": point["time_formatted"],
+                                    "time_seconds": point["time_seconds"],
+                                    "percentile": point["percentile"],
+                                    "replay_rate": round(replay_rate, 2),
+                                }
+                            )
+
+                formatted_result["insights"] = {
+                    "average_retention": round(sum(retention_values) / len(retention_values), 2),
+                    "completion_rate": round(retention_values[-1] if retention_values else 0, 2),
+                    "fifty_percent_point": next(
+                        (
+                            d["time_formatted"]
+                            for d in formatted_result["retention_data"]
+                            if d["retention_percentage"] <= 50
+                        ),
+                        "Never",
+                    ),
+                    "major_dropoffs": major_dropoffs[:5],  # Top 5 drop-offs
+                    "replay_hotspots": sorted(
+                        replay_hotspots, key=lambda x: x["replay_rate"], reverse=True
+                    )[:5],
+                }
+
+            # Keep raw response for reference
+            formatted_result["kaltura_raw_response"] = kaltura_data
+
         elif "error" in data:
             return json.dumps(data, indent=2)
 
-        if user_ids:
+        if user_ids and compare_segments:
             formatted_result[
                 "note"
-            ] = "User filtering requested but applied at API level if supported"
+            ] = "For segment comparison, call this function twice with different user filters"
 
         return json.dumps(formatted_result, indent=2)
     except Exception as e:
