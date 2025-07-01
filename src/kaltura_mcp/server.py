@@ -4,7 +4,7 @@
 import asyncio
 import sys
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import mcp.types as types
 from mcp.server import Server
@@ -27,6 +27,8 @@ except ImportError:
     pass
 
 from .kaltura_client import KalturaClientManager
+from .prompts import prompts_manager
+from .resources import resources_manager
 from .tools import (
     get_analytics,
     get_analytics_timeseries,
@@ -530,6 +532,39 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[types.TextCont
         return [types.TextContent(type="text", text=result)]
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error executing {name}: {str(e)}")]
+
+
+@server.list_prompts()
+async def list_prompts() -> List[types.Prompt]:
+    """List all available prompts."""
+    return prompts_manager.list_prompts()
+
+
+@server.get_prompt()
+async def get_prompt(
+    name: str, arguments: Optional[Dict[str, Any]] = None
+) -> types.GetPromptResult:
+    """Get a specific prompt."""
+    return await prompts_manager.get_prompt(name, kaltura_manager, arguments)
+
+
+@server.list_resources()
+async def list_resources() -> List[types.Resource]:
+    """List all available resources."""
+    return resources_manager.list_resources()
+
+
+@server.list_resource_templates()
+async def list_resource_templates() -> List[types.ResourceTemplate]:
+    """List all resource templates."""
+    return resources_manager.list_resource_templates()
+
+
+@server.read_resource()
+async def read_resource(uri: str) -> List[types.ResourceContents]:
+    """Read a resource."""
+    content = await resources_manager.read_resource(uri, kaltura_manager)
+    return [types.ResourceContents(uri=uri, mimeType="application/json", text=content)]
 
 
 async def async_main():
