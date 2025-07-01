@@ -39,7 +39,6 @@ from .tools import (
     get_realtime_metrics,
     get_thumbnail_url,
     get_video_retention,
-    get_video_timeline_analytics,
     list_analytics_capabilities,
     list_attachment_assets,
     list_caption_assets,
@@ -53,28 +52,45 @@ kaltura_manager = KalturaClientManager()
 
 @server.list_tools()
 async def list_tools() -> List[types.Tool]:
-    """List all available Kaltura API tools."""
+    """List all available Kaltura API tools.
+
+    Tools are organized by function:
+    - MEDIA: get_media_entry, search_entries, get_download_url, get_thumbnail_url
+    - ANALYTICS: get_analytics, get_analytics_timeseries, get_video_retention, get_realtime_metrics,
+                 get_quality_metrics, get_geographic_breakdown, list_analytics_capabilities
+    - CAPTIONS: list_caption_assets, get_caption_content
+    - ATTACHMENTS: list_attachment_assets, get_attachment_content
+    - ORGANIZATION: list_categories
+
+    Each tool description includes:
+    - USE WHEN: Specific scenarios for using this tool
+    - RETURNS: What data you'll get back
+    - EXAMPLES: Concrete usage examples
+    """
     return [
         types.Tool(
             name="get_media_entry",
-            description="Get detailed information about a specific media entry",
+            description="Get complete metadata for a single video/media file. USE WHEN: You have a specific entry_id and need full details (title, description, duration, tags, thumbnail, status). RETURNS: Complete media metadata including URLs, dimensions, creation date. EXAMPLE: After search finds entry_id='1_abc123', use this to get full video details.",
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "entry_id": {"type": "string", "description": "The Kaltura media entry ID"},
+                    "entry_id": {
+                        "type": "string",
+                        "description": "The media entry ID (format: '1_abc123' or '0_xyz789')",
+                    },
                 },
                 "required": ["entry_id"],
             },
         ),
         types.Tool(
             name="list_categories",
-            description="List and search content categories",
+            description="Browse content organization hierarchy. USE WHEN: Exploring content structure, finding category IDs for filtering, understanding content taxonomy. Categories organize videos into folders/topics. RETURNS: Tree structure with category names, IDs, parent-child relationships. EXAMPLE: Find all videos in 'Training' category by first getting category ID.",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "search_text": {
                         "type": "string",
-                        "description": "Filter categories by name or description",
+                        "description": "Optional text to filter categories (e.g., 'training', 'marketing')",
                     },
                     "limit": {
                         "type": "integer",
@@ -85,25 +101,25 @@ async def list_tools() -> List[types.Tool]:
         ),
         types.Tool(
             name="get_analytics",
-            description="Get comprehensive analytics data for detailed reporting and analysis. Use this for performance metrics, rankings, comparisons, and exporting tabular data. Supports 60+ report types.",
+            description="Get detailed analytics in TABLE format for reporting. USE WHEN: Creating reports, comparing metrics, ranking content, analyzing performance, exporting data. RETURNS: Structured data with headers/rows. EXAMPLES: 'Show top 10 videos by views', 'Compare user engagement by category', 'Export monthly performance report'. Use list_analytics_capabilities to see all 60+ report types. For charts/graphs, use get_analytics_timeseries instead.",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "from_date": {
                         "type": "string",
-                        "description": "Start date (YYYY-MM-DD)",
+                        "description": "Start date in YYYY-MM-DD format (e.g., '2024-01-01')",
                     },
                     "to_date": {
                         "type": "string",
-                        "description": "End date (YYYY-MM-DD)",
+                        "description": "End date in YYYY-MM-DD format (e.g., '2024-01-31')",
                     },
                     "report_type": {
                         "type": "string",
-                        "description": "Report type (default: 'content'). Options: content, user_engagement, geographic, platforms, bandwidth, etc. See list_analytics_capabilities for full list.",
+                        "description": "Type of analytics report (default: 'content'). Common options: 'content' (video performance), 'user_engagement' (viewer behavior), 'geographic' (location data), 'platforms' (device/OS breakdown). Run list_analytics_capabilities for all 60+ types.",
                     },
                     "entry_id": {
                         "type": "string",
-                        "description": "Optional media entry ID for content-specific reports",
+                        "description": "Optional: Filter analytics for specific video (e.g., '1_abc123'). Leave empty for all content.",
                     },
                     "user_id": {
                         "type": "string",
@@ -133,11 +149,11 @@ async def list_tools() -> List[types.Tool]:
                 "properties": {
                     "from_date": {
                         "type": "string",
-                        "description": "Start date (YYYY-MM-DD)",
+                        "description": "Start date in YYYY-MM-DD format (e.g., '2024-01-01')",
                     },
                     "to_date": {
                         "type": "string",
-                        "description": "End date (YYYY-MM-DD)",
+                        "description": "End date in YYYY-MM-DD format (e.g., '2024-01-31')",
                     },
                     "report_type": {
                         "type": "string",
@@ -150,12 +166,12 @@ async def list_tools() -> List[types.Tool]:
                     },
                     "entry_id": {
                         "type": "string",
-                        "description": "Optional specific entry ID",
+                        "description": "Optional: Track single video's performance over time (e.g., '1_abc123'). Leave empty for platform-wide trends.",
                     },
                     "interval": {
                         "type": "string",
                         "enum": ["hours", "days", "weeks", "months"],
-                        "description": "Time interval (default: 'days')",
+                        "description": "Time grouping for data points (default: 'days'). Use 'hours' for <7 day ranges, 'days' for monthly, 'weeks' for quarterly, 'months' for yearly views. Affects data granularity.",
                     },
                 },
                 "required": ["from_date", "to_date"],
@@ -163,13 +179,13 @@ async def list_tools() -> List[types.Tool]:
         ),
         types.Tool(
             name="get_video_retention",
-            description="Analyze viewer retention throughout a video with 101-point granularity. Shows where viewers drop off, replay segments, and completion rates. Essential for content optimization.",
+            description="Analyze WHERE viewers stop watching in a video. USE WHEN: Optimizing video content, finding boring sections, identifying engaging moments, improving completion rates. RETURNS: 101 data points (0-100%) showing viewer count at each percent of video. EXAMPLES: 'Where do viewers drop off in video 1_abc123?', 'What parts get replayed?', 'Compare retention for anonymous vs logged-in users'. Shows exact percentages where audience is lost.",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "entry_id": {
                         "type": "string",
-                        "description": "Video entry ID (required)",
+                        "description": "Video to analyze (required, format: '1_abc123'). Get from search_entries or get_media_entry.",
                     },
                     "from_date": {
                         "type": "string",
@@ -181,7 +197,7 @@ async def list_tools() -> List[types.Tool]:
                     },
                     "user_filter": {
                         "type": "string",
-                        "description": "Filter by: 'anonymous', 'registered', email, or 'cohort:name'",
+                        "description": "Optional viewer segment: 'anonymous' (not logged in), 'registered' (logged in), 'user@email.com' (specific user), 'cohort:students' (named group). Compare different audience behaviors.",
                     },
                     "compare_segments": {
                         "type": "boolean",
@@ -193,14 +209,14 @@ async def list_tools() -> List[types.Tool]:
         ),
         types.Tool(
             name="get_realtime_metrics",
-            description="Get real-time analytics updated every ~30 seconds. Perfect for live monitoring, dashboards, and immediate feedback.",
+            description="Get LIVE analytics updating every 30 seconds. USE WHEN: Monitoring live events/streams, building real-time dashboards, tracking immediate campaign impact, detecting issues as they happen. RETURNS: Current active viewers, plays per minute, bandwidth usage. EXAMPLES: 'How many people watching right now?', 'Monitor live event performance', 'Track viral video in real-time'. Different from historical analytics - this is NOW.",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "report_type": {
                         "type": "string",
                         "enum": ["viewers", "geographic", "quality"],
-                        "description": "Type of real-time data (default: 'viewers')",
+                        "description": "What to monitor (default: 'viewers'): 'viewers' = active viewer count, 'geographic' = viewer locations, 'quality' = streaming performance/buffering.",
                     },
                     "entry_id": {
                         "type": "string",
@@ -211,22 +227,22 @@ async def list_tools() -> List[types.Tool]:
         ),
         types.Tool(
             name="get_quality_metrics",
-            description="Get Quality of Experience (QoE) metrics for streaming performance. Analyzes buffering, bitrate, errors, and user experience quality.",
+            description="Analyze streaming QUALITY and viewer experience. USE WHEN: Troubleshooting playback issues, monitoring streaming performance, optimizing delivery, investigating viewer complaints. RETURNS: Buffer rates, bitrate averages, error rates, startup times, quality scores. EXAMPLES: 'Why are users complaining about buffering?', 'Check streaming quality by device type', 'Find videos with poor performance'. Helps ensure smooth playback.",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "from_date": {
                         "type": "string",
-                        "description": "Start date (YYYY-MM-DD)",
+                        "description": "Start date in YYYY-MM-DD format (e.g., '2024-01-01')",
                     },
                     "to_date": {
                         "type": "string",
-                        "description": "End date (YYYY-MM-DD)",
+                        "description": "End date in YYYY-MM-DD format (e.g., '2024-01-31')",
                     },
                     "metric_type": {
                         "type": "string",
                         "enum": ["overview", "experience", "engagement", "stream", "errors"],
-                        "description": "Type of quality metric (default: 'overview')",
+                        "description": "Quality aspect to analyze (default: 'overview'): 'overview' = general quality, 'experience' = user QoE scores, 'engagement' = quality impact on viewing, 'stream' = technical metrics, 'errors' = playback failures.",
                     },
                     "entry_id": {
                         "type": "string",
@@ -242,26 +258,26 @@ async def list_tools() -> List[types.Tool]:
         ),
         types.Tool(
             name="get_geographic_breakdown",
-            description="Get analytics broken down by geographic location. Analyze global reach, market penetration, and regional content performance.",
+            description="Analyze viewer LOCATIONS and regional performance. USE WHEN: Understanding global reach, planning regional strategies, checking market penetration, optimizing CDN, compliance checks. RETURNS: Views/viewers by country/region/city with percentages. EXAMPLES: 'Which countries watch our content?', 'Show US state breakdown', 'Find top 10 cities for viewership'. Includes map-ready data.",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "from_date": {
                         "type": "string",
-                        "description": "Start date (YYYY-MM-DD)",
+                        "description": "Start date in YYYY-MM-DD format (e.g., '2024-01-01')",
                     },
                     "to_date": {
                         "type": "string",
-                        "description": "End date (YYYY-MM-DD)",
+                        "description": "End date in YYYY-MM-DD format (e.g., '2024-01-31')",
                     },
                     "granularity": {
                         "type": "string",
                         "enum": ["world", "country", "region", "city"],
-                        "description": "Geographic detail level (default: 'country')",
+                        "description": "Location detail level (default: 'country'): 'world' = continents, 'country' = nations, 'region' = states/provinces, 'city' = cities. Higher detail requires region_filter.",
                     },
                     "region_filter": {
                         "type": "string",
-                        "description": "Filter for specific region (e.g., 'US' for states)",
+                        "description": "Zoom into specific area: For region view use country code (e.g., 'US' for US states), for city view use 'US-CA' for California cities. Required for region/city granularity.",
                     },
                     "metrics": {
                         "type": "array",
@@ -274,52 +290,25 @@ async def list_tools() -> List[types.Tool]:
         ),
         types.Tool(
             name="list_analytics_capabilities",
-            description="List all available analytics functions and their use cases. Helper to discover analytics capabilities.",
+            description="Discover ALL analytics capabilities of this system. USE WHEN: User asks 'what analytics can you do?', exploring available reports, understanding metrics options, learning about analytics features. RETURNS: Complete list of 7 analytics functions with descriptions, 60+ report types, available dimensions, time intervals. EXAMPLE: Always run this when user first asks about analytics. No parameters needed - just call it!",
             inputSchema={
                 "type": "object",
                 "properties": {},
             },
         ),
         types.Tool(
-            name="get_video_timeline_analytics",
-            description="[DEPRECATED - Use get_video_retention instead] Legacy function for video timeline analytics.",
+            name="get_download_url",
+            description="Get direct DOWNLOAD link for video files. USE WHEN: User needs to download/save video locally, export for editing, backup content, share downloadable link. RETURNS: Time-limited secure URL for downloading. EXAMPLE: 'Download video 1_abc123', 'Get mp4 file for editing'. Different from streaming - this is for saving files.",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "entry_id": {
                         "type": "string",
-                        "description": "Single video entry ID (required)",
+                        "description": "Video to download (format: '1_abc123')",
                     },
-                    "from_date": {
-                        "type": "string",
-                        "description": "Start date (YYYY-MM-DD)",
-                    },
-                    "to_date": {
-                        "type": "string",
-                        "description": "End date (YYYY-MM-DD)",
-                    },
-                    "user_ids": {
-                        "type": "string",
-                        "description": "User filter",
-                    },
-                    "compare_cohorts": {
-                        "type": "boolean",
-                        "description": "Compare cohorts",
-                    },
-                },
-                "required": ["entry_id"],
-            },
-        ),
-        types.Tool(
-            name="get_download_url",
-            description="Get direct download URL for media files",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "entry_id": {"type": "string", "description": "The media entry ID"},
                     "flavor_id": {
                         "type": "string",
-                        "description": "Optional specific flavor ID for quality/format selection",
+                        "description": "Optional: Choose specific quality/format. Leave empty for default. Use list_media_entries to see available flavors.",
                     },
                 },
                 "required": ["entry_id"],
@@ -327,11 +316,14 @@ async def list_tools() -> List[types.Tool]:
         ),
         types.Tool(
             name="get_thumbnail_url",
-            description="Get video thumbnail/preview image URL with custom dimensions",
+            description="Get video THUMBNAIL/POSTER image. USE WHEN: Displaying video previews, creating galleries, showing video cards, generating custom thumbnails. RETURNS: Image URL with your specified size. EXAMPLES: 'Get thumbnail for video 1_abc123', 'Create 400x300 preview image', 'Get frame from 30 seconds in'. Can capture any frame from video.",
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "entry_id": {"type": "string", "description": "The media entry ID"},
+                    "entry_id": {
+                        "type": "string",
+                        "description": "Video to get thumbnail from (format: '1_abc123')",
+                    },
                     "width": {
                         "type": "integer",
                         "description": "Thumbnail width in pixels (default: 120)",
@@ -350,13 +342,13 @@ async def list_tools() -> List[types.Tool]:
         ),
         types.Tool(
             name="search_entries",
-            description="Search and discover media entries with intelligent sorting and filtering. Supports content search across titles, descriptions, captions, and metadata. IMPORTANT: To find the latest/newest videos, use query='*' with sort_field='created_at' and sort_order='desc'. This will list all entries sorted by creation date.",
+            description="SEARCH for videos or LIST all content. USE WHEN: Finding videos by keyword, listing newest content, discovering what's available, filtering by date/category. POWERFUL SEARCH across titles, descriptions, tags, captions. EXAMPLES: 'Find videos about python', 'Show newest 10 videos' (use query='*' sort_field='created_at'), 'Search in transcripts for keyword', 'List videos from last week'. This is your primary discovery tool!",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "query": {
                         "type": "string",
-                        "description": "Search query. Use '*' to list all entries (essential for finding latest/newest content), use keywords to search for specific content, or exact phrases in quotes.",
+                        "description": "Search terms or '*' for all. EXAMPLES: '*' = list all videos, 'marketing' = find marketing content, '\"exact phrase\"' = exact match, 'python programming' = videos containing both words. ALWAYS use '*' when listing newest/all videos.",
                     },
                     "search_type": {
                         "type": "string",
@@ -439,46 +431,55 @@ async def list_tools() -> List[types.Tool]:
         ),
         types.Tool(
             name="list_caption_assets",
-            description="List available captions and subtitles for a media entry",
+            description="Find all CAPTIONS/SUBTITLES for a video. USE WHEN: Checking if video has captions, finding available languages, preparing for accessibility, getting transcript. RETURNS: List of caption files with languages, formats (SRT/VTT), IDs. EXAMPLE: 'Does video 1_abc123 have captions?', 'List subtitle languages available'. First step before getting caption content.",
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "entry_id": {"type": "string", "description": "The media entry ID"},
+                    "entry_id": {
+                        "type": "string",
+                        "description": "Video to check for captions (format: '1_abc123')",
+                    },
                 },
                 "required": ["entry_id"],
             },
         ),
         types.Tool(
             name="get_caption_content",
-            description="Get caption/subtitle content and download URL",
+            description="Get actual CAPTION TEXT or download captions file. USE WHEN: Reading video transcript, downloading subtitles, analyzing spoken content, creating accessible content. RETURNS: Full caption text and download URL. EXAMPLE: 'Get English subtitles for video', 'Read transcript to find mentions of topic'. Use after list_caption_assets to get specific caption ID.",
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "caption_asset_id": {"type": "string", "description": "The caption asset ID"},
+                    "caption_asset_id": {
+                        "type": "string",
+                        "description": "Caption ID from list_caption_assets (format: '1_xyz789')",
+                    },
                 },
                 "required": ["caption_asset_id"],
             },
         ),
         types.Tool(
             name="list_attachment_assets",
-            description="List attachment assets for a media entry",
+            description="Find FILES ATTACHED to videos. USE WHEN: Looking for supplementary materials, PDFs, slides, documents linked to video. RETURNS: List of attached files with names, types, sizes, IDs. EXAMPLES: 'What documents are attached to training video?', 'Find PDF slides for presentation'. Attachments are additional files uploaded with videos.",
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "entry_id": {"type": "string", "description": "The media entry ID"},
+                    "entry_id": {
+                        "type": "string",
+                        "description": "Video to check for attachments (format: '1_abc123')",
+                    },
                 },
                 "required": ["entry_id"],
             },
         ),
         types.Tool(
             name="get_attachment_content",
-            description="Get attachment content details and download URL",
+            description="Download or read ATTACHED FILES from videos. USE WHEN: Accessing supplementary materials, downloading PDFs, getting presentation slides, reading attached documents. RETURNS: File content (if text) or download URL. EXAMPLE: 'Download the PDF slides', 'Read the attached notes'. Use after list_attachment_assets to get specific attachment ID.",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "attachment_asset_id": {
                         "type": "string",
-                        "description": "The attachment asset ID",
+                        "description": "Attachment ID from list_attachment_assets (format: '1_xyz789')",
                     },
                 },
                 "required": ["attachment_asset_id"],
@@ -509,8 +510,6 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[types.TextCont
             result = await get_geographic_breakdown(kaltura_manager, **arguments)
         elif name == "list_analytics_capabilities":
             result = await list_analytics_capabilities(kaltura_manager, **arguments)
-        elif name == "get_video_timeline_analytics":
-            result = await get_video_timeline_analytics(kaltura_manager, **arguments)
         elif name == "get_download_url":
             result = await get_download_url(kaltura_manager, **arguments)
         elif name == "get_thumbnail_url":

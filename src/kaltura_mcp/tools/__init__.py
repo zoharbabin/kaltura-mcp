@@ -10,14 +10,6 @@ from .analytics import (
     get_video_retention,
     list_analytics_capabilities,
 )
-from .analytics_core import (
-    get_analytics_enhanced,
-    get_analytics_graph,
-    get_geographic_analytics,
-    get_qoe_analytics,
-    get_realtime_analytics,
-    get_video_timeline_analytics,
-)
 from .assets import (
     get_attachment_content,
     get_caption_content,
@@ -44,7 +36,7 @@ from .utils import (
     validate_entry_id,
 )
 
-# Export everything exactly as before - ZERO breaking changes
+# Export all tools
 __all__ = [
     # Utilities
     "handle_kaltura_error",
@@ -55,7 +47,7 @@ __all__ = [
     "get_media_entry",
     "get_thumbnail_url",
     "list_media_entries",
-    # Analytics operations - purpose-based naming
+    # Analytics operations
     "get_analytics",
     "get_analytics_timeseries",
     "get_video_retention",
@@ -63,13 +55,6 @@ __all__ = [
     "get_quality_metrics",
     "get_geographic_breakdown",
     "list_analytics_capabilities",
-    # Analytics operations - core/enhanced (kept for compatibility)
-    "get_analytics_enhanced",
-    "get_analytics_graph",
-    "get_geographic_analytics",
-    "get_qoe_analytics",
-    "get_realtime_analytics",
-    "get_video_timeline_analytics",
     # Search operations
     "esearch_entries",
     "list_categories",

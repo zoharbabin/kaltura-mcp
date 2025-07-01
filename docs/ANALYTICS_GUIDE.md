@@ -1,5 +1,29 @@
 # Analytics V2 Guide - Purpose-Based Analytics Functions
 
+## Quick Decision Guide for LLMs
+
+When a user asks about analytics, use this decision tree:
+
+1. **"Show me analytics/metrics/performance"** → `get_analytics()` - Returns tables with detailed data
+2. **"Create a chart/graph/visualization"** → `get_analytics_timeseries()` - Returns time-series data for charts  
+3. **"Where do viewers drop off?"** → `get_video_retention()` - Returns 101-point retention curve
+4. **"What's happening right now?"** → `get_realtime_metrics()` - Returns live data (updates every 30s)
+5. **"Check streaming quality"** → `get_quality_metrics()` - Returns QoE scores and buffering rates
+6. **"Where are viewers located?"** → `get_geographic_breakdown()` - Returns location-based analytics
+7. **"What analytics can you do?"** → `list_analytics_capabilities()` - Returns all capabilities
+
+### Common User Intents Mapped to Functions
+
+| User Says | Use This Function | Example Call |
+|-----------|-------------------|--------------|
+| "Top 10 videos" | `get_analytics()` | `get_analytics(manager, from_date, to_date, report_type='content', limit=10)` |
+| "Daily views trend" | `get_analytics_timeseries()` | `get_analytics_timeseries(manager, from_date, to_date, interval='days')` |
+| "Video performance" | `get_analytics()` | `get_analytics(manager, from_date, to_date, entry_id='1_abc123')` |
+| "Viewer retention" | `get_video_retention()` | `get_video_retention(manager, entry_id='1_abc123')` |
+| "Live viewers" | `get_realtime_metrics()` | `get_realtime_metrics(manager, report_type='viewers')` |
+| "Buffering issues" | `get_quality_metrics()` | `get_quality_metrics(manager, from_date, to_date, metric_type='stream')` |
+| "Geographic data" | `get_geographic_breakdown()` | `get_geographic_breakdown(manager, from_date, to_date)` |
+
 ## Overview
 
 The Analytics V2 module provides purpose-based functions that make it easy for both LLMs and developers to discover and use the right analytics tool for their needs. Instead of requiring knowledge of specific report types, you can now choose functions based on what you want to accomplish.
@@ -671,19 +695,6 @@ ca_cities = await get_geographic_breakdown(
 5. **Cache results** when appropriate - most data updates hourly
 6. **Use pagination** for large result sets
 7. **Specify dimensions** to get more granular insights
-
-## Migration from Legacy Functions
-
-If you're using the older analytics functions, here's how to migrate:
-
-| Old Function | New Function | Notes |
-|-------------|--------------|-------|
-| `get_analytics(report_type="percentiles")` | `get_video_retention()` | Much clearer purpose and better output format |
-| `get_analytics_graph()` | `get_analytics_timeseries()` | Purpose-based naming |
-| `get_video_timeline_analytics()` | `get_video_retention()` | Simplified parameters |
-| `get_geographic_analytics()` | `get_geographic_breakdown()` | More intuitive naming |
-| `get_qoe_analytics()` | `get_quality_metrics()` | Clearer purpose |
-| `get_realtime_analytics()` | `get_realtime_metrics()` | Consistent naming |
 
 ## Error Handling
 
